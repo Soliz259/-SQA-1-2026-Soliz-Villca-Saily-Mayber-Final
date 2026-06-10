@@ -1,0 +1,66 @@
+<nav class="navbar">
+    <div class="container-fluid">
+        <button class="btn-menu me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+            <i class="fas fa-bars"></i> Menú
+        </button>
+        <span class="navbar-brand" id="bienvenida"></span>
+        <a href="perfilAdmin.html" class="btn-perfil ms-auto" title="Perfil de Usuario">
+            <i class="fas fa-user-circle"></i>
+        </a>
+    </div>
+</nav>
+<!-- Sidebar -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="sidebarLabel">Panel de Control</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <a href="panelAdmin.html">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a href="clientesAdmin.html">
+                    <i class="fas fa-users"></i> Cliente
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a href="productosAdmin.html">
+                    <i class="fas fa-box"></i> Productos
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a href="repartidoresAdmin.html">
+                    <i class="fas fa-truck"></i> Repartidores
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a href="empleadosAdmin.html">
+                    <i class="fas fa-users-cog"></i> Empleados
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a href="listaVentas.html">
+                    <i class="fas fa-shopping-cart"></i> Ventas
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a>
+                    <i class="fas fa-sign-out-alt"></i>
+                    <button style="border: none; background-color: transparent; color: white;" onclick="cerrarSesion()">
+                        Cerrar Sesión
+                    </button>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+<script>
+    function cerrarSesion() {
+        localStorage.removeItem("correoLogeado");
+        location.href = "../../logout.php";
+    }
+</script>

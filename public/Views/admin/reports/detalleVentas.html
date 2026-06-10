@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Detalle de Venta</title>
+    <link rel="stylesheet" href="../../../assets/css/admin/detalleVentas.css">
+</head>
+
+<body>
+    <main>
+        <h1>Detalle de Venta</h1>
+        <div id="contenido">Cargando...</div>
+
+        <div class="botones">
+            <button onclick="window.print()">Imprimir</button>
+            <button onclick="window.location.href='../listaVentas.html'">Volver</button>
+        </div>
+    </main>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const idVenta = params.get('id');
+
+        fetch('/sistema/public/api/ver-venta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idVenta: parseInt(idVenta) })
+        })
+            .then(res => res.json())
+            .then(data => {
+                const cont = document.getElementById('contenido');
+
+                if (!data.success || !data.venta) {
+                    cont.innerHTML = '<p>No se encontraron detalles para esta venta.</p>';
+                    return;
+                }
+
+                const venta = data.venta;
+
+                cont.innerHTML = `
+    <p><strong>ID Venta:</strong> ${venta.idVenta}</p>
+    <p><strong>Cliente:</strong> ${venta.Cliente}</p>
+    <p><strong>Fecha:</strong> ${venta.fecha}</p>
+    <p><strong>Total:</strong> $${parseFloat(venta.total).toFixed(2)}</p>
+    <p><strong>Método de Pago:</strong> ${venta.MetodoPago}</p>
+    <p><strong>Estado de Venta:</strong> ${venta.EstadoVenta}</p>
+  `;
+            })
+            .catch(err => {
+                document.getElementById('contenido').innerHTML = 'Error cargando detalle';
+                console.error('Error cargando detalle:', err);
+            });
+
+    </script>
+</body>
+
+</html>

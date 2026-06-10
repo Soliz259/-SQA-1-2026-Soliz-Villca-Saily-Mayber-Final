@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Repartidor | Pollos Express</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Fuente Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Tu archivo CSS -->
+  <link rel="stylesheet" href="../../assets/css/repartidor/panelRep.css">
+</head>
+
+<body>
+  <header>
+    <div class="container header-content">
+      <div class="header-left">
+        <h1><i class="fas fa-motorcycle"></i> <span class="header-title">Panel Repartidor</span></h1>
+        <div class="welcome-message">
+          <i class="fas fa-user"></i>
+          <span id="nombreRepartidor">Cargando...</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="btn-logout" onclick="cerrarSesion()">
+          <i class="fas fa-sign-out-alt"></i> <span class="logout-text">Cerrar Sesión</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="card">
+        <h2><i class="fas fa-clipboard-list"></i> Pedidos</h2>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaPedidos">
+              <tr>
+                <td colspan="5" class="empty-state">
+                  <div><i class="fas fa-spinner fa-spin"></i> Cargando pedidos...</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Función para hacer la tabla responsive en móviles
+    function makeTableResponsive() {
+      const table = document.querySelector('table');
+      if (!table) return;
+
+      if (window.innerWidth <= 576) {
+        const ths = document.querySelectorAll('thead th');
+        const tds = document.querySelectorAll('tbody td');
+
+        // Asegurarse de que todas las celdas tengan data-label
+        tds.forEach(td => {
+          const index = td.cellIndex;
+          if (ths[index]) {
+            td.setAttribute('data-label', ths[index].textContent);
+          }
+        });
+      }
+    }
+
+    // Ejecutar al cargar y al redimensionar
+    window.addEventListener('load', makeTableResponsive);
+    window.addEventListener('resize', makeTableResponsive);
+
+    // Función para cerrar sesión
+    function cerrarSesion() {
+      localStorage.removeItem("correoLogeado");
+      location.href = "/sistema/public/logout.php";
+    }
+
+    let pedidosMostrados = new Set();
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const nombreRepartidor = document.getElementById("nombreRepartidor");
+
+      fetch("/sistema/public/api/estado-sesion")
+        .then(res => {
+          if (!res.ok) throw new Error("Error en la respuesta del servidor");
+          return res.json();
+        })
+        .then(data => {
+          if (!data?.logeado || !data.correo) {
+            alert("No hay sesión activa.");
+            location.href = "login.html";
+            return;
+          }
+
+          return fetch("/sistema/public/api/repartidores/obtener-por-correo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ correo: data.correo })
+          });
+        })
+        .then(res => {
+          if (!res) return;
+          if (!res.ok) throw new Error("Error al obtener datos del repartidor");
+          return res.json();
+        })
+        .then(data => {
+          if (!data?.success) {
+            nombreRepartidor.textContent = "No se pudo cargar el usuario";
+            return;
+          }
+
+          const userData = Array.isArray(data.data) ? data.data[0] : data.data;
+          if (!userData) {
+            nombreRepartidor.textContent = "Usuario no encontrado";
+            return;
+          }
+
+          nombreRepartidor.textContent = `${userData.nombre} ${userData.apellido}`;
+          cargarPedidosAsignados(userData.idUsuario);
+        })
+        .catch(err => {
+          console.error("Error en autenticación:", err);
+          nombreRepartidor.textContent = "Error al cargar nombre";
+        });
+    });
+
+    function cargarPedidosAsignados(idUsuario) {
+      fetch(`/sistema/public/api/repartidores/pedidos?idUsuario=${idUsuario}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Error al obtener pedidos");
+          return res.json();
+        })
+        .then(data => {
+          const tabla = document.getElementById("tablaPedidos");
+          tabla.innerHTML = "";
+
+          if (data?.success && Array.isArray(data.data) && data.data.length > 0) {
+            data.data.forEach(p => {
+              if (pedidosMostrados.has(p.idVenta)) return;
+              pedidosMostrados.add(p.idVenta);
+
+              const tr = document.createElement("tr");
+              const estadoClass = getEstadoClass(p.estadoEntrega);
+
+              tr.innerHTML = `
+                <td data-label="ID">${p.idVenta}</td>
+                <td data-label="Fecha">${formatDate(p.fecha)}</td>
+                <td data-label="Total">Bs${parseFloat(p.total).toFixed(2)}</td>
+                <td data-label="Estado"><span class="status ${estadoClass}">${p.estadoEntrega}</span></td>
+                <td data-label="Acciones">
+                  <button class="btn btn-primary" onclick="verMapa(${p.idVenta})">
+                    <i class="fas fa-map-marked-alt"></i> <span>Mapa</span>
+                  </button>
+                  <button class="btn btn-success" onclick="marcarEntregado(${p.idAsignacion})">
+                    <i class="fas fa-check-circle"></i> <span>Entregado</span>
+                  </button>
+                </td>`;
+              tabla.appendChild(tr);
+            });
+          } else {
+            tabla.innerHTML = `
+              <tr>
+                <td colspan="5" class="empty-state">
+                  <div><i class="fas fa-box-open"></i> No hay pedidos asignados actualmente</div>
+                </td>
+              </tr>`;
+          }
+        })
+        .catch(err => {
+          console.error("Error cargando pedidos:", err);
+          document.getElementById("tablaPedidos").innerHTML = `
+            <tr>
+              <td colspan="5" class="empty-state">
+                <div><i class="fas fa-exclamation-triangle"></i> Error al cargar pedidos</div>
+              </td>
+            </tr>`;
+        });
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString('es-ES', options);
+    }
+
+    function getEstadoClass(estado) {
+      if (!estado) return '';
+      switch (estado.toLowerCase()) {
+        case 'pendiente': return 'status-pendiente';
+        case 'en camino': return 'status-en-camino';
+        case 'entregado': return 'status-entregado';
+        default: return '';
+      }
+    }
+
+    function verMapa(idVenta) {
+      if (!idVenta) {
+        alert("ID de venta no válido");
+        return;
+      }
+      localStorage.setItem("idVentaMapa", idVenta);
+      location.href = "ver_mapa_pedido.html";
+    }
+
+    function marcarEntregado(idAsignacion) {
+      if (!idAsignacion) {
+        alert("ID de asignación no válido");
+        return;
+      }
+
+      if (!confirm("¿Estás seguro de marcar este pedido como entregado?")) {
+        return;
+      }
+
+      fetch("/sistema/public/api/repartidores/pedido-entregado", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idAsignacion })
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Error en la respuesta del servidor");
+          return res.json();
+        })
+        .then(data => {
+          alert(data.mensaje || "Pedido marcado como entregado con éxito");
+          location.reload();
+        })
+        .catch(err => {
+          console.error("Error al marcar como entregado:", err);
+          alert("Error al marcar como entregado: " + err.message);
+        });
+    }
+  </script>
+</body>
+
+</html>

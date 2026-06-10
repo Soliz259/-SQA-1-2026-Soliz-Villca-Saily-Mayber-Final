@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Pedidos | Pollos Express</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../assets/css/client/pedidosCliente.css">
+</head>
+
+<body>
+    <button id="toggleMenu" class="hamburguesa">&#9776;</button>
+    <aside>
+        <div class="logo">
+            <a href="../../index.php">
+                <h1>Pollos <span>Express</span></h1>
+            </a>
+        </div>
+        <div id="navbar-container"></div>
+        <button class="btn-cerrar" onclick="cerrarSesion()">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </button>
+    </aside>
+
+    <main>
+        <section class="seccion bienvenida">
+            <h2>Mis Pedidos</h2>
+            <p>Revisa el historial y estado de tus pedidos realizados.</p>
+        </section>
+
+        <section class="seccion">
+            <h2>Historial de Pedidos</h2>
+            <table class="tabla-pedidos">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Total (Bs)</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaPedidos">
+                    <!-- Cargado dinámicamente -->
+                </tbody>
+            </table>
+        </section>
+
+        <section class="seccion detalle-container" id="detallePedido">
+            <h2>Detalle del Pedido <span id="detalleId"></span></h2>
+            <table class="tabla-pedidos">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario (Bs)</th>
+                        <th>Subtotal (Bs)</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaDetalle">
+                    <!-- Productos cargados dinámicamente -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        function cerrarSesion() {
+            localStorage.removeItem("correoLogeado");
+            location.href = "../../logout.php";
+        }
+
+        fetch("/sistema/public/estadoSesion.php")
+            .then(res => res.json())
+            .then(data => {
+                if (!data.logeado) {
+                    alert("Sesión no iniciada.");
+                    location.href = "/login.php";  // ruta absoluta desde raíz
+                } else {
+                    console.log("Usuario logeado:", data.correo);
+                }
+            })
+            .catch(() => {
+                alert("Error al verificar sesión.");
+                location.href = "/sistema/public/login.php";  // ruta absoluta también aquí
+            });
+
+
+        function getEstadoClass(estado) {
+            estado = estado.toLowerCase();
+            if (estado.includes('pendiente')) return 'estado-pendiente';
+            if (estado.includes('completado') || estado.includes('entregado')) return 'estado-completado';
+            if (estado.includes('cancelado')) return 'estado-cancelado';
+            return '';
+        }
+
+        function cargarPedidos() {
+            fetch("/sistema/public/api/mis-pedidos")
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById("tablaPedidos");
+                    tbody.innerHTML = "";
+
+                    if (!data.success) {
+                        tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem;">
+                            Error: ${data.mensaje}
+                        </td>
+                    </tr>`;
+                        return;
+                    }
+
+                    const pedidos = data.pedidos;
+                    if (pedidos.length === 0) {
+                        tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem;">
+                            No tienes pedidos registrados
+                        </td>
+                    </tr>`;
+                        return;
+                    }
+
+                    pedidos.forEach(p => {
+                        const fila = document.createElement("tr");
+
+                        // Botón Ver detalle
+                        let acciones = `
+                        <button class="btn btn-ver" onclick="toggleDetalle(this, ${p.idPedido})">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>`;
+
+                        // Botón Cancelar si está pendiente
+                        if (p.estado.toLowerCase() === "pendiente") {
+                            acciones += `
+                        <button class="btn btn-cancelar" onclick="cancelarPedido(${p.idPedido})">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>`;
+                        }
+
+                        fila.innerHTML = `
+                    <td>${p.idPedido}</td>
+                    <td>${p.fecha}</td>
+                    <td><span class="estado ${getEstadoClass(p.estado)}">${p.estado}</span></td>
+                    <td>${parseFloat(p.total).toFixed(2)}</td>
+                    <td>${acciones}</td>
+                `;
+                        tbody.appendChild(fila);
+                    });
+                })
+                .catch(err => {
+                    console.error("Error al cargar pedidos:", err);
+                    const tbody = document.getElementById("tablaPedidos");
+                    tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 2rem;">
+                        Ocurrió un error al cargar los pedidos.
+                    </td>
+                </tr>`;
+                });
+        }
+
+
+
+        let pedidoActivo = null; // Guarda el id del pedido actualmente mostrado
+
+        function toggleDetalle(boton, idPedido) {
+            // Si ya está visible y se volvió a hacer clic en el mismo pedido
+            if (pedidoActivo === idPedido) {
+                cerrarDetalle();
+                pedidoActivo = null;
+                return;
+            }
+
+            // Mostrar detalle
+            verDetalle(idPedido);
+            pedidoActivo = idPedido;
+        }
+
+
+        function cerrarDetalle() {
+            document.getElementById("detallePedido").classList.remove("active");
+            document.getElementById("tablaDetalle").innerHTML = "";
+            document.getElementById("detalleId").textContent = "";
+        }
+
+        /*  *
+            * Abre el panel de detalle y carga los productos de un pedido.
+            * Ahora utiliza el endpoint MVC /api/detalle-pedido y el campo idPedido.
+        */
+        function verDetalle(idPedido) {
+            fetch("/sistema/public/api/detalle-pedido", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ idPedido })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert(data.mensaje || "No se pudo cargar el detalle.");
+                        return;
+                    }
+
+                    // Limpiar tabla y mostrar ID del pedido
+                    const tabla = document.getElementById("tablaDetalle");
+                    tabla.innerHTML = "";
+                    document.getElementById("detalleId").textContent = idPedido;
+                    document.getElementById("detallePedido").classList.add("active");
+
+                    // Rellenar filas con cada producto
+                    data.detalle.forEach(item => {
+                        const fila = document.createElement("tr");
+                        const subtotal = parseFloat(item.cantidad) * parseFloat(item.precioUnitario);
+                        fila.innerHTML = `
+                <td>${item.nombre}</td>
+                <td>${item.cantidad}</td>
+                <td>Bs ${parseFloat(item.precioUnitario).toFixed(2)}</td>
+                <td>Bs ${subtotal.toFixed(2)}</td>
+            `;
+                        tabla.appendChild(fila);
+                    });
+
+                    // Scroll suave al contenedor de detalle
+                    document.getElementById("detallePedido").scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch(err => {
+                    console.error("Error al obtener detalle del pedido:", err);
+                    alert("Error al cargar el detalle.");
+                });
+        }
+
+
+        function cancelarPedido(idVenta) {
+            if (!confirm("¿Estás seguro de cancelar este pedido?")) return;
+
+            fetch("/sistema/public/api/cancelar-pedido", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ idVenta })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.mensaje);
+                    if (data.success) {
+                        cargarPedidos(); // recargar pedidos
+                        document.getElementById("detallePedido").classList.remove("active");
+                    }
+                });
+        }
+
+        cargarPedidos();
+    </script>
+    <script src="../../assets/js/navbar.js"></script>
+    <script src="../../assets/js/hamburguesa.js"></script>
+</body>
+
+</html>

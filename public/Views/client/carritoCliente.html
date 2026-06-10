@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Carrito | Pollos Express</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css">
+    <link rel="stylesheet" href="../../assets/css/client/carritoCliente.css">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <a href="../../index.php">Pollos <span>Express</span></a>
+        </div>
+
+        <a href="../../catalogo.php" class="back-link">
+            <i class="fas fa-arrow-left"></i> Volver al menú
+        </a>
+    </header>
+
+    <div class="carrito-container">
+        <h2 class="animate__animated animate__fadeIn">Mi Carrito</h2>
+        <div id="listaProductos" class="productos"></div>
+        <div id="emptyCartMessage" class="empty-cart">Tu carrito está vacío</div>
+
+        <div class="resumen">
+            <div class="total">Total: <span id="total">Bs 0.00</span></div>
+            <button class="btn-finalizar" id="btnFinalizar">
+                Finalizar Pedido <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+
+
+    <!-- Librerías JS -->
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+
+
+    <script>
+
+        // Código para animaciones y notificaciones
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Animación inicial
+            gsap.from('header', {
+                duration: 0.8,
+                y: -50,
+                opacity: 0,
+                ease: "power2.out"
+            });
+
+            gsap.from('.carrito-container h2', {
+                duration: 0.8,
+                y: 30,
+                opacity: 0,
+                delay: 0.3,
+                ease: "elastic.out(1, 0.5)"
+            });
+
+            window.animarProducto = function (item, index) {
+                setTimeout(() => {
+                    anime({
+                        targets: item,
+                        opacity: [0, 1],
+                        translateY: [20, 0],
+                        duration: 600,
+                        easing: 'easeOutExpo'
+                    });
+                    item.classList.add("visible");
+                }, 100 * index);
+            };
+
+            window.animarTotal = function (total) {
+                anime({
+                    targets: '#total',
+                    scale: [1.2, 1],
+                    duration: 600,
+                    easing: 'easeOutElastic',
+                    begin: () => {
+                        document.getElementById("total").textContent = "Bs " + total.toFixed(2);
+                    }
+                });
+            };
+
+            window.animarFinalizar = function () {
+                anime({
+                    targets: '#btnFinalizar',
+                    scale: [1, 0.95, 1],
+                    duration: 600,
+                    easing: 'easeOutElastic'
+                });
+            };
+
+            window.showNotification = function (message, type) {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+          <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+          ${message}
+        `;
+                document.body.appendChild(notification);
+
+                anime({
+                    targets: notification,
+                    opacity: [0, 1],
+                    translateY: [-20, 0],
+                    duration: 300,
+                    easing: 'easeOutQuad',
+                    complete: () => {
+                        setTimeout(() => {
+                            anime({
+                                targets: notification,
+                                opacity: [1, 0],
+                                translateY: [0, -20],
+                                duration: 300,
+                                easing: 'easeInQuad',
+                                complete: () => notification.remove()
+                            });
+                        }, 3000);
+                    }
+                });
+            };
+        });
+
+
+        function showNotification(mensaje, tipo = "success") {
+            const noti = document.getElementById("notificacion");
+            noti.textContent = mensaje;
+            noti.className = `notificacion ${tipo}`;
+            setTimeout(() => noti.classList.remove("oculto"), 10);
+
+            setTimeout(() => {
+                noti.classList.add("oculto");
+            }, 3000);
+        }
+
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const emptyCartMessage = document.getElementById("emptyCartMessage");
+            let correo = null;
+
+            // Paso 1: Consultar el estado de sesión
+            fetch("/sistema/public/estadoSesion.php")
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.logeado) {
+                        showNotification("Debes iniciar sesión para ver tu carrito", "error");
+                        setTimeout(() => {
+                            window.location.href = "login.php";
+                        }, 1500);
+                        return;
+                    }
+
+                    correo = data.correo; // Ya tenemos el correo de la sesión
+
+                    // Ahora que tenemos el correo, podemos cargar el carrito
+                    cargarCarrito();
+                })
+                .catch(err => {
+                    console.error("Error al verificar sesión:", err);
+                    showNotification("Error al verificar sesión", "error");
+                });
+
+            // Función para modificar cantidad
+            window.modificarCantidad = function (idProducto, cambio) {
+                if (!correo) return;
+
+                fetch("/sistema/public/api/modificar-cantidad-carrito", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ correo, idProducto, cambio })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification("Carrito actualizado", "success");
+                            cargarCarrito();
+                        } else {
+                            showNotification(data.mensaje || "Error al modificar", "error");
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error al modificar carrito:", err);
+                        showNotification("Error al actualizar", "error");
+                    });
+            };
+
+
+            function cargarCarrito() {
+                fetch("/sistema/public/api/ver-carrito", {
+                    method: "GET", // No necesitas POST si el correo ya está en sesión
+                    headers: { "Content-Type": "application/json" }
+                })
+                    .then(async res => {
+                        const contentType = res.headers.get("content-type") || "";
+                        const text = await res.text();
+
+                        if (!contentType.includes("application/json")) {
+                            throw new Error("Respuesta inesperada del servidor: " + text);
+                        }
+
+                        return JSON.parse(text);
+                    })
+                    .then(data => {
+                        const lista = document.getElementById("listaProductos");
+                        lista.innerHTML = "";
+
+                        if (!data.success || !Array.isArray(data.productos) || data.productos.length === 0) {
+                            anime({
+                                targets: emptyCartMessage,
+                                opacity: [0, 1],
+                                translateY: [20, 0],
+                                duration: 600,
+                                easing: 'easeOutExpo'
+                            });
+                            emptyCartMessage.classList.add("visible");
+                            document.getElementById("total").textContent = "Bs 0.00";
+                            return;
+                        }
+
+                        emptyCartMessage.classList.remove("visible");
+                        let total = 0;
+
+                        data.productos.forEach((p, index) => {
+                            const subtotal = parseFloat(p.precio) * parseInt(p.cantidad);
+                            total += subtotal;
+
+                            const item = document.createElement("div");
+                            item.className = "producto";
+
+                            let imagenUrl = p.imagenUrl;
+                            if (!imagenUrl || imagenUrl.trim() === "") {
+                                imagenUrl = 'https://i.gifer.com/VAyR.gif';
+                            } else if (!imagenUrl.startsWith('http') && !imagenUrl.startsWith('https')) {
+                                if (!imagenUrl.startsWith('/')) {
+                                    imagenUrl = 'images/productos/' + imagenUrl;
+                                }
+                            }
+
+                            item.innerHTML = `
+                    <img class="producto-img" src="${imagenUrl}" alt="${p.nombre}"
+                        onerror="this.onerror=null;this.src='https://i.gifer.com/VAyR.gif'">
+                    <div class="producto-info">
+                        <h4>${p.nombre}</h4>
+                        <p>Precio unitario: Bs ${parseFloat(p.precio).toFixed(2)}</p>
+                        <div class="cantidad-control">
+                            <button class="cantidad-btn decrement" onclick="modificarCantidad(${p.idProducto}, -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="cantidad-value">${p.cantidad}</span>
+                            <button class="cantidad-btn increment" onclick="modificarCantidad(${p.idProducto}, 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <p class="subtotal">Subtotal: Bs ${subtotal.toFixed(2)}</p>
+                    </div>
+                `;
+
+                            lista.appendChild(item);
+                            animarProducto(item, index);
+                        });
+
+                        animarTotal(total);
+                    })
+                    .catch(error => {
+                        console.error("Error al cargar el carrito:", error);
+                        showNotification("Error al cargar el carrito", "error");
+                    });
+            }
+
+            // Finalizar pedido
+            document.getElementById("btnFinalizar").addEventListener("click", () => {
+                animarFinalizar();
+
+                if (!confirm("¿Confirmas que deseas realizar el pedido en efectivo?")) return;
+
+                fetch("/sistema/public/api/generar-pedido", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({})
+                })
+                    .then(async res => {
+                        const contentType = res.headers.get("content-type") || "";
+                        const text = await res.text();
+
+                        if (!contentType.includes("application/json")) {
+                            throw new Error("Respuesta inesperada del servidor: " + text);
+                        }
+
+                        return JSON.parse(text);
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            showNotification("Pedido realizado con éxito", "success");
+                            setTimeout(() => {
+                                window.location.href = "pedidosCliente.html";
+                            }, 1500);
+                        } else {
+                            showNotification(data.mensaje || "Error al finalizar pedido", "error");
+
+                            if (data.mensaje && data.mensaje.includes("registrar una dirección")) {
+                                setTimeout(() => {
+                                    window.location.href = "direccionCliente.html";
+                                }, 2000);
+                            }
+                        }
+                    })
+
+
+
+                    .catch(err => {
+                        console.error("Error al finalizar el pedido:", err);
+                        showNotification("Error al procesar el pedido", "error");
+                    });
+            });
+
+        });
+    </script>
+
+    <div id="notificacion" class="notificacion oculto"></div>
+
+</body>
+
+</html>

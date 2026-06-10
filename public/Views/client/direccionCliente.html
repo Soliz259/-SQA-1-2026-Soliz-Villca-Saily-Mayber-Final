@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registrar Dirección | Pollos Express</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="../../assets/css/client/registroDireccion.css" />
+</head>
+
+<body>
+  <button id="toggleMenu" class="hamburguesa">&#9776;</button>
+  <aside>
+    <div class="logo">
+      <a href="../../index.php">
+        <h1>Pollos <span>Express</span></h1>
+      </a>
+    </div>
+    <div id="navbar-container"></div>
+    <button class="btn-cerrar" onclick="cerrarSesion()">
+      <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </button>
+  </aside>
+
+  <main>
+    <section class="seccion">
+      <h2>Registrar Dirección</h2>
+      <form id="formDireccion">
+        <div class="form-group">
+          <label for="direccion">Dirección:</label>
+          <input type="text" id="direccion" name="direccion" required />
+        </div>
+
+        <div class="form-group">
+          <label for="referencia">Referencia:</label>
+          <textarea id="referencia" name="referencia" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Selecciona tu ubicación en el mapa:</label>
+          <div id="mapa"></div>
+          <input type="hidden" name="latitud" required />
+          <input type="hidden" name="longitud" required />
+        </div>
+
+        <button type="submit">
+          <i class="fas fa-save"></i> Guardar Dirección
+        </button>
+
+        <div class="success-message" id="direccionSuccess"></div>
+        <div class="error-message" id="direccionError"></div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    function cerrarSesion() {
+      localStorage.removeItem("correoLogeado");
+      location.href = "../../logout.php";
+    }
+
+    fetch("/sistema/public/estadoSesion.php")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.logeado) {
+          alert("Sesión no iniciada.");
+          location.href = "/login.php"; // ruta absoluta desde raíz
+        } else {
+          console.log("Usuario logeado:", data.correo);
+        }
+      })
+      .catch(() => {
+        alert("Error al verificar sesión.");
+        location.href = "/sistema/public/login.php"; // ruta absoluta también aquí
+      });
+
+    // Mapa
+    const mapa = L.map("mapa").setView([-16.5, -68.15], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+    }).addTo(mapa);
+
+
+
+    let marcador;
+
+
+
+    fetch("/sistema/public/api/datos-cliente", {
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const titulo = document.querySelector("section.seccion h2");
+
+        if (data.success) {
+          const d = data.direccion || {};
+
+          if (d.direccion) {
+            document.getElementById("direccion").value = d.direccion;
+          }
+
+          if (d.referencia) {
+            document.getElementById("referencia").value = d.referencia;
+          }
+
+          if (d.latitud && d.longitud) {
+            const latNum = parseFloat(d.latitud);
+            const lngNum = parseFloat(d.longitud);
+            document.querySelector('input[name="latitud"]').value = latNum.toFixed(6);
+            document.querySelector('input[name="longitud"]').value = lngNum.toFixed(6);
+
+            const latLng = L.latLng(latNum, lngNum);
+            marcador = L.marker(latLng).addTo(mapa);
+            mapa.setView(latLng, 15);
+          }
+
+          // Cambiar título si hay dirección registrada
+          if (d.direccion || d.referencia) {
+            titulo.textContent = "Actualizar Dirección";
+          }
+        } else {
+          console.warn("No hay dirección registrada.");
+          // Aquí título queda como "Registrar Dirección"
+        }
+      })
+      .catch((error) => {
+        console.error("Error al obtener datos del cliente:", error);
+      });
+
+
+
+    mapa.on("click", (e) => {
+      const { lat, lng } = e.latlng;
+      document.querySelector('input[name="latitud"]').value = lat.toFixed(6);
+      document.querySelector('input[name="longitud"]').value = lng.toFixed(6);
+
+      if (marcador) {
+        marcador.setLatLng(e.latlng);
+      } else {
+        marcador = L.marker(e.latlng).addTo(mapa);
+      }
+    });
+
+    // Envío del formulario de dirección
+    document.getElementById("formDireccion").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const direccionSuccess = document.getElementById("direccionSuccess");
+      const direccionError = document.getElementById("direccionError");
+
+      direccionSuccess.style.display = "none";
+      direccionError.style.display = "none";
+
+      const datos = {
+        direccion: this.direccion.value.trim(),
+        referencia: this.referencia.value.trim(),
+        latitud: parseFloat(this.latitud.value),
+        longitud: parseFloat(this.longitud.value),
+      };
+
+      // Validaciones básicas
+      if (!datos.direccion || !datos.referencia || isNaN(datos.latitud) || isNaN(datos.longitud)) {
+        direccionError.textContent = "Todos los campos son obligatorios y deben ser válidos.";
+        direccionError.style.display = "block";
+        return;
+      }
+
+      fetch("/sistema/public/api/registrar-direccion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            direccionSuccess.textContent = data.mensaje;
+            direccionSuccess.style.display = "block";
+            setTimeout(() => {
+              window.location.href = "panelCliente.html";
+            }, 1500);
+          } else {
+            direccionError.textContent = data.mensaje;
+            direccionError.style.display = "block";
+          }
+        })
+        .catch((err) => {
+          console.error("Error al guardar dirección:", err);
+          direccionError.textContent = "Ocurrió un error al guardar la dirección";
+          direccionError.style.display = "block";
+        });
+    });
+  </script>
+  <script src="../../assets/js/navbar.js"></script>
+  <script src="../../assets/js/hamburguesa.js"></script>
+</body>
+
+</html>

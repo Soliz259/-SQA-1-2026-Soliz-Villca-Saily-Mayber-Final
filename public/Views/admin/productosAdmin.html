@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administración | Pollos Express</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap 5 CDN (lo mantenemos para la funcionalidad) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome (como en el primer ejemplo) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fuente Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/admin/productosAdmin.css">
+    <link rel="stylesheet" href="../../assets/css/admin/admin.css">
+</head>
+
+<body>
+    <!--Navbar reutilizable no tocar-->
+    <div class="navbar-container"></div>
+    <br>
+    <br>
+    <h1><i class="fas fa-box"></i> Gestión de Productos</h1>
+    <!-- Formulario -->
+    <h2 id="tituloForm"><i class="fas fa-plus-circle"></i> Agregar Producto</h2>
+    <form id="formProducto">
+        <input type="hidden" id="idProducto" name="idProducto">
+        <div class="form-group">
+            <label for="nombre"><i class="fas fa-tag"></i> Nombre</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Nombre del producto" required>
+        </div>
+        <div class="form-group">
+            <label for="precio"><i class="fas fa-dollar-sign"></i> Precio (Bs)</label>
+            <input type="number" id="precio" name="precio" placeholder="Precio unitario" min="0" step="0.01" required>
+        </div>
+        <div class="form-group">
+            <label for="stock"><i class="fas fa-boxes"></i> Stock</label>
+            <input type="number" id="stock" name="stock" placeholder="Cantidad disponible" min="0" required>
+        </div>
+        <div class="form-group">
+            <label for="descripcionProducto"><i class="fas fa-align-left"></i> Descripción</label>
+            <input type="text" id="descripcionProducto" name="descripcionProducto" placeholder="Descripción detallada"
+                required>
+        </div>
+        <div class="form-group">
+            <label for="imagenUrl"><i class="fas fa-image"></i> URL de Imagen</label>
+            <input type="text" id="imagenUrl" name="imagenUrl" placeholder="https://ejemplo.com/imagen.jpg" required>
+        </div>
+        <div class="form-group">
+            <label for="idTipoProducto"><i class="fas fa-list"></i> Tipo de Producto</label>
+            <select id="idTipoProducto" name="idTipoProducto" required>
+                <option value="">Seleccione Tipo</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="idEstadoProducto"><i class="fas fa-info-circle"></i> Estado</label>
+            <select id="idEstadoProducto" name="idEstadoProducto" required>
+                <option value="">Seleccione Estado</option>
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit"><i class="fas fa-save"></i> Guardar</button>
+            <button type="button" onclick="cancelarEdicion()"><i class="fas fa-times"></i> Cancelar</button>
+        </div>
+    </form>
+
+
+    <!-- Filtro -->
+    <div class="filtro-container">
+        <input type="text" id="filtroTexto" placeholder="Buscar productos...">
+        <select id="filtroCampo">
+            <option value="nombre">Nombre</option>
+            <option value="precio">Precio</option>
+            <option value="stock">Stock</option>
+            <option value="tipoProducto">Tipo</option>
+            <option value="estadoProducto">Estado</option>
+            <option value="descripcionProducto">Descripción</option>
+        </select>
+    </div>
+
+    <!-- Tabla -->
+    <table id="tablaProductos">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Descripción</th>
+                <th>Imagen</th>
+                <th style="text-align: center;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts (se mantienen igual) -->
+    <script>
+        let editando = false;
+        let productosCargados = [];
+
+
+        function cargarProductos() {
+            fetch('/sistema/public/api/productos-todos')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert('Error al cargar productos: ' + (data.mensaje || ''));
+                        return;
+                    }
+                    productosCargados = data.productos;
+                    renderizarTabla(productosCargados);
+                });
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem("correoLogeado");
+            location.href = "../../logout.php";
+        }
+
+        function crearProducto(producto) {
+            return fetch('/sistema/public/api/productos/crear', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(producto)
+            }).then(res => res.json());
+        }
+
+        function actualizarProducto(producto) {
+            return fetch('/sistema/public/api/productos/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(producto)
+            }).then(res => res.json());
+        }
+
+        document.getElementById('formProducto').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const id = formData.get('idProducto');
+
+            const producto = {
+                idProducto: id && id.trim() !== '' ? parseInt(id, 10) : null,
+                nombre: formData.get('nombre'),
+                precio: parseFloat(formData.get('precio')),
+                stock: parseInt(formData.get('stock'), 10),
+                descripcionProducto: formData.get('descripcionProducto'),
+                imagenUrl: formData.get('imagenUrl'),
+                idTipoProducto: parseInt(formData.get('idTipoProducto'), 10),
+                idEstadoProducto: parseInt(formData.get('idEstadoProducto'), 10)
+            };
+
+            if (producto.idProducto !== null && !isNaN(producto.idProducto)) {
+                // Si existe un idProducto válido, actualizamos
+                actualizarProducto(producto)
+                    .then(resp => {
+                        alert(resp.success ? 'Producto actualizado exitosamente' : 'Error: ' + (resp.mensaje || ''));
+                        cancelEdit();
+                        cargarProductos();
+                    });
+            } else {
+                // Si no hay idProducto válido, creamos nuevo
+                crearProducto(producto)
+                    .then(resp => {
+                        alert(resp.success ? 'Producto creado exitosamente' : 'Error: ' + (resp.mensaje || ''));
+                        cancelEdit();
+                        cargarProductos();
+                    });
+            }
+        });
+
+
+
+
+
+        function renderizarTabla(data) {
+            const tbody = document.querySelector("#tablaProductos tbody");
+            tbody.innerHTML = "";
+
+            data.forEach(p => {
+                // Parsear valores numéricos
+                const precioNum = parseFloat(p.precio) || 0;
+                const stockNum = parseInt(p.stock, 10) || 0;
+
+                // Supongo que tu API devuelve también los nombres de tipo y estado en
+                // p.tipoProducto y p.estadoProducto. Si usas otros campos, ajústalos aquí.
+                const tipoNombre = p.tipoProducto ?? '—';
+                const estadoNombre = p.estadoProducto ?? '—';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.idProducto}</td>
+                        <td>${tipoNombre}</td>
+                        <td>${estadoNombre}</td>
+                        <td>${p.nombre}</td>
+                        <td>Bs ${precioNum.toFixed(2)}</td>
+                        <td>${stockNum}</td>
+                        <td>${p.descripcionProducto}</td>
+                        <td>
+                        <img src="${p.imagenUrl}" width="50" alt="Imagen de ${p.nombre}"
+                            onerror="this.src='https://i.gifer.com/VAyR.gif'">
+                        </td>
+                    <td>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick='editar(${JSON.stringify(p)})'>Editar</button>
+                            <button onclick="eliminar(${p.idProducto})">Eliminar</button>
+                        </div>
+                    </td>
+
+                    </tr>
+                    `;
+            });
+        }
+
+
+        function editar(p) {
+            editando = true;
+            document.getElementById('tituloForm').innerText = "Editar Producto";
+
+            document.getElementById('idProducto').value = p.idProducto;
+            document.getElementById('nombre').value = p.nombre;
+            document.getElementById('precio').value = p.precio;
+            document.getElementById('stock').value = p.stock;
+            document.getElementById('descripcionProducto').value = p.descripcionProducto;
+            document.getElementById('imagenUrl').value = p.imagenUrl;
+            document.getElementById('idTipoProducto').value = p.idTipoProducto;
+            document.getElementById('idEstadoProducto').value = p.idEstadoProducto;
+        }
+
+        function cancelEdit() {
+            editando = false;
+            const form = document.getElementById('formProducto');
+            form.reset();
+            document.getElementById('idProducto').value = '';  // Limpiar aquí
+            document.getElementById('tituloForm').innerText = "Agregar Producto";
+        }
+
+
+        function eliminar(id) {
+            if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
+
+            fetch('/sistema/public/api/productos/delete', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idProducto: id })
+            })
+                .then(res => res.json())
+                .then(resp => {
+                    alert(resp.success ? "Producto eliminado." : "Error: " + (resp.mensaje || ''));
+                    cargarProductos();
+                });
+        }
+
+        function cargarTipos() {
+            fetch('/sistema/public/api/productos/tipos')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return;
+                    const select = document.getElementById('idTipoProducto');
+                    data.tipos.forEach(tp => {
+                        select.innerHTML += `<option value="${tp.idTipoProducto}">${tp.nombre}</option>`;
+                    });
+                });
+        }
+
+        function cargarEstados() {
+            fetch('/sistema/public/api/productos/estados')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return;
+                    const select = document.getElementById('idEstadoProducto');
+                    data.estados.forEach(es => {
+                        select.innerHTML += `<option value="${es.idEstadoProducto}">${es.nombre}</option>`;
+                    });
+                });
+        }
+
+        // filtros igual que antes...
+        function filtrarProductos() {
+            const texto = document.getElementById('filtroTexto').value.toLowerCase();
+            const campo = document.getElementById('filtroCampo').value;
+            const filtrados = productosCargados.filter(p =>
+                String(p[campo]).toLowerCase().includes(texto)
+            );
+            renderizarTabla(filtrados);
+        }
+
+        document.getElementById('filtroTexto').addEventListener('input', filtrarProductos);
+        document.getElementById('filtroCampo').addEventListener('change', filtrarProductos);
+
+        // inicialización
+        cargarProductos();
+        cargarTipos();
+        cargarEstados();
+    </script>
+    <script src="../../assets/js/navbarAdmin.js"></script>
+</body>
+
+</html>

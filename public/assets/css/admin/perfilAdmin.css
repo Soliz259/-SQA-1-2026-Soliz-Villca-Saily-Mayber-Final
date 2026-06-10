@@ -1,0 +1,233 @@
+:root {
+    --negro: #121212;
+    --negro-oscuro: #000000;
+    --amarillo: #F4A300;
+    --amarillo-hover: #FFC933;
+    --blanco: #FFFFFF;
+    --gris: #1E1E1E;
+    --gris-claro: #CCCCCC;
+    --rojo: #FF5252;
+    --verde: #198754;
+    --azul: #0d6efd;
+}
+
+.btn-eliminar {
+    background-color: var(--rojo);
+    color: var(--blanco);
+}
+
+.btn-eliminar:hover {
+    background-color: #e53935;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 82, 82, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f5f5;
+    color: var(--negro);
+    min-height: 100vh;
+    padding-top: 80px;
+}
+
+/* Navbar superior */
+.navbar {
+    background-color: var(--blanco);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    height: 60px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.navbar-brand {
+    font-weight: 600;
+    color: var(--blanco);
+}
+
+/* Sidebar */
+.offcanvas {
+    background-color: var(--blanco);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
+}
+
+.offcanvas-header {
+    border-bottom: 1px solid var(--gris-claro);
+}
+
+.offcanvas-title {
+    font-weight: 600;
+    color: var(--negro);
+}
+
+.list-group-item {
+    border: none;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.list-group-item:hover {
+    background-color: rgba(244, 163, 0, 0.1);
+}
+
+.list-group-item a {
+    color: var(--negro);
+    text-decoration: none;
+}
+
+/* Botones */
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: var(--amarillo);
+    color: var(--negro);
+}
+
+.btn-primary:hover {
+    background-color: var(--amarillo-hover);
+    transform: translateY(-2px);
+}
+
+.btn-outline-primary {
+    border: 1px solid var(--amarillo);
+    color: var(--amarillo);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--amarillo);
+    color: var(--negro);
+}
+
+.btn-danger {
+    background-color: var(--rojo);
+    color: var(--blanco);
+}
+
+.btn-danger:hover {
+    background-color: #ff6b6b;
+}
+
+/* Contenido principal */
+.container-main {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-weight: 600;
+    color: var(--negro);
+    margin: 0;
+}
+
+/* User summary */
+#user-summary {
+    background-color: var(--blanco);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+#user-summary img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--amarillo);
+}
+
+#user-summary .info {
+    flex: 1;
+}
+
+#user-summary input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--gris-claro);
+    border-radius: 6px;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Card de perfil */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    background-color: var(--amarillo);
+    color: var(--negro);
+    border-bottom: none;
+    border-radius: 12px 12px 0 0 !important;
+    padding: 1rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.form-control {
+    border: 1px solid var(--gris-claro);
+    border-radius: 6px;
+    padding: 0.75rem;
+}
+
+.form-control:disabled {
+    background-color: #f8f9fa;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container-main {
+        padding: 1.5rem;
+    }
+
+    #user-summary {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .form-label {
+        margin-bottom: 0.5rem;
+    }
+
+    .row {
+        margin-bottom: 1rem;
+    }
+
+    .col-sm-9,
+    .col-sm-3 {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}

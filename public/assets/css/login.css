@@ -1,0 +1,244 @@
+:root {
+    --blanco: #FFFFFF;
+    --negro: #000000;
+    --amarillo: #F4A300;
+    --hover-amarillo: #FFC933;
+    --gris: #F5F5F5;
+    --gris-oscuro: #E0E0E0;
+    --texto-gris: #666666;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--negro);
+    color: var(--negro);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-image: radial-gradient(circle at 20% 30%, rgba(244, 163, 0, 0.15) 0%, transparent 25%),
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 25%);
+    line-height: 1.5;
+}
+
+/* Contenedor principal mejorado */
+.container {
+    background: var(--blanco);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 500px;
+    min-width: 300px; /* Ancho mínimo para móviles muy pequeños */
+    padding: clamp(20px, 5vw, 40px); /* Padding responsivo */
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.6s ease-out;
+    margin: 20px auto; /* Margen seguro en todos los lados */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header responsivo */
+.header {
+    text-align: center;
+    margin-bottom: clamp(15px, 3vw, 25px);
+}
+
+.logo {
+    font-size: clamp(1.8rem, 6vw, 2rem); /* Tamaño responsivo */
+    font-weight: 700;
+    color: var(--negro);
+    margin-bottom: 5px;
+}
+
+.logo span {
+    color: var(--amarillo);
+}
+
+.subtitle {
+    font-size: clamp(0.8rem, 3vw, 0.9rem);
+    color: var(--texto-gris);
+}
+
+h2 {
+    text-align: center;
+    font-size: clamp(1.3rem, 5vw, 1.5rem);
+    color: var(--amarillo);
+    margin-bottom: clamp(15px, 3vw, 25px);
+    font-weight: 600;
+}
+
+/* Formulario ultra responsivo */
+#formRegistro {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(10px, 3vw, 15px);
+}
+
+.input-group {
+    position: relative;
+}
+
+.input-group i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #777;
+    font-size: clamp(0.9rem, 4vw, 1rem);
+}
+
+/* Campos de entrada mejorados */
+#nombre,
+#apellido,
+#telefono,
+#ci,
+#correo,
+#contrasena {
+    width: 100%;
+    padding: clamp(12px, 3.5vw, 14px) clamp(12px, 3.5vw, 14px) clamp(12px, 3.5vw, 14px) clamp(40px, 10vw, 45px);
+    border-radius: 10px;
+    border: 2px solid var(--gris-oscuro);
+    font-size: clamp(0.85rem, 3.5vw, 0.95rem);
+    transition: all 0.3s ease;
+    background-color: var(--gris);
+}
+
+#nombre:focus,
+#apellido:focus,
+#telefono:focus,
+#ci:focus,
+#correo:focus,
+#contrasena:focus {
+    outline: none;
+    border-color: var(--amarillo);
+    background-color: var(--blanco);
+    box-shadow: 0 0 0 3px rgba(244, 163, 0, 0.2);
+}
+
+/* Botones optimizados */
+button[type="submit"],
+button[type="button"] {
+    width: 100%;
+    padding: clamp(12px, 3.5vw, 15px);
+    background: var(--amarillo);
+    border: none;
+    color: var(--negro);
+    font-weight: 600;
+    font-size: clamp(0.9rem, 3.5vw, 1rem);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: clamp(8px, 2vw, 10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+button[type="submit"]:hover,
+button[type="button"]:hover {
+    background: var(--hover-amarillo);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(244, 163, 0, 0.4);
+}
+
+button[type="submit"]:active,
+button[type="button"]:active {
+    transform: translateY(0);
+}
+
+button[type="button"] {
+    background: var(--gris);
+}
+
+button[type="button"]:hover {
+    box-shadow: 0 5px 15px rgba(150, 141, 125, 0.4);
+}
+
+.footer-links {
+    text-align: center;
+    margin-top: clamp(15px, 4vw, 20px);
+    font-size: clamp(0.8rem, 3vw, 0.9rem);
+}
+
+.footer-links a {
+    color: var(--amarillo);
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+/* Logo responsivo */
+.logo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: clamp(15px, 4vw, 25px);
+}
+
+#logo-pollo {
+    max-width: clamp(60px, 18vw, 70px);
+    height: auto;
+    display: block;
+}
+
+/* Media Queries mejoradas */
+@media (min-width: 768px) {
+    #formRegistro {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    #correo,
+    #contrasena,
+    button[type="submit"],
+    button[type="button"] {
+        grid-column: span 2;
+    }
+}
+
+/* Animación de onda optimizada */
+@keyframes wave {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.wave {
+    animation: wave 1.5s ease infinite;
+}
+
+/* Mejoras para pantallas muy pequeñas */
+@media (max-width: 350px) {
+    .container {
+        border-radius: 15px;
+        padding: 15px;
+    }
+    
+    .input-group i {
+        left: 10px;
+        font-size: 0.8rem;
+    }
+    
+    #nombre,
+    #apellido,
+    #telefono,
+    #ci,
+    #correo,
+    #contrasena {
+        padding-left: 35px;
+    }
+}

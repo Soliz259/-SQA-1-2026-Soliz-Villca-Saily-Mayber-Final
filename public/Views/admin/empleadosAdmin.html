@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administración | Pollos Express</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap 5 CDN (lo mantenemos para la funcionalidad) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome (como en el primer ejemplo) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fuente Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/admin/admin.css">
+    <link rel="stylesheet" href="../../assets/css/admin/empleadosAdmin.css">
+</head>
+
+<body>
+    <!--Navbar reutilizable no tocar-->
+    <div class="navbar-container"></div>
+    <br>
+    <br>
+    <br>
+    <div>
+        <h2>Gestión de Empleados</h2>
+        <button id="btnCrearEmpleado">Crear Nuevo Empleado</button>
+
+        <table cellpadding="8" cellspacing="0" style="width: 100%; margin-top: 10px;">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Teléfono</th>
+                    <th>C.I.</th>
+                    <th>Turno</th>
+                    <th>Salario</th>
+                    <th>Fecha Contratación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="listaEmpleados">
+                <!-- Aquí se cargarán los empleados -->
+            </tbody>
+        </table>
+    </div>
+
+    <div id="overlay"></div>
+
+    <div id="modalEmpleado">
+        <h3 id="modalEmpleadoTitulo">Crear Empleado</h3>
+        <form id="formEmpleado">
+            <input type="hidden" id="idUsuario" name="idUsuario" />
+            <input type="hidden" id="idCredenciales" name="idCredenciales" />
+
+            <fieldset>
+                <legend>Credenciales</legend>
+                <div class="field-group">
+                    <label for="correo">Correo:</label>
+                    <input type="email" id="correo" name="correo" required />
+                </div>
+                <div class="field-group">
+                    <label for="contrasena">Contraseña:</label>
+                    <input type="password" id="contrasena" name="contrasena" required />
+                </div>
+                <div class="field-group">
+                    <label for="confirmarContrasena">Confirmar Contraseña:</label>
+                    <input type="password" id="confirmarContrasena" name="confirmarContrasena" required />
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Datos Personales</legend>
+                <div class="field-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" required />
+                </div>
+                <div class="field-group">
+                    <label for="apellido">Apellido:</label>
+                    <input type="text" id="apellido" name="apellido" required />
+                </div>
+                <div class="field-group">
+                    <label for="telefono">Teléfono:</label>
+                    <input type="tel" id="telefono" name="telefono" />
+                </div>
+                <div class="field-group">
+                    <label for="ci">C.I.:</label>
+                    <input type="text" id="ci" name="ci" required />
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Datos de Empleado</legend>
+                <div class="field-group">
+                    <label for="salario">Salario:</label>
+                    <input type="number" id="salario" name="salario" step="0.01" required />
+                </div>
+                <div class="field-group">
+                    <label for="fechaContratacion">Fecha Contratación:</label>
+                    <input type="date" id="fechaContratacion" name="fechaContratacion" required />
+                </div>
+                <div class="field-group">
+                    <label for="idTurno">Turno:</label>
+                    <select id="idTurno" name="idTurno" required>
+                        <option value="1">Mañana</option>
+                        <option value="2">Tarde</option>
+                    </select>
+                </div>
+            </fieldset>
+
+            <div class="form-actions">
+                <button type="submit">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+                <button type="button" id="btnCerrarModalEmpleado">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts (se mantienen igual) -->
+    <script>
+        const btnCrearEmpleado = document.getElementById('btnCrearEmpleado');
+        const modalEmpleado = document.getElementById('modalEmpleado');
+        const btnCerrarModalEmpleado = document.getElementById('btnCerrarModalEmpleado');
+        const formEmpleado = document.getElementById('formEmpleado');
+        const overlay = document.getElementById('overlay');
+        const listaEmpleados = document.getElementById('listaEmpleados');
+        const modalTitulo = document.getElementById('modalEmpleadoTitulo');
+
+        // Abrir modal para crear nuevo empleado
+        btnCrearEmpleado.addEventListener('click', () => {
+            formEmpleado.reset();
+            modalTitulo.textContent = "Crear Empleado";
+            formEmpleado.contrasena.required = true;
+            formEmpleado.confirmarContrasena.required = true;
+            document.getElementById('idUsuario').value = '';
+            document.getElementById('idCredenciales').value = '';
+            modalEmpleado.style.display = 'block';
+            overlay.style.display = 'block';
+        });
+
+        btnCerrarModalEmpleado.addEventListener('click', cerrarModal);
+        overlay.addEventListener('click', cerrarModal);
+
+        function cerrarModal() {
+            modalEmpleado.style.display = 'none';
+            overlay.style.display = 'none';
+        }
+        function cerrarSesion() {
+            localStorage.removeItem("correoLogeado");
+            location.href = "../../logout.php";
+        }
+
+        // Cargar lista de empleados
+        async function cargarEmpleados() {
+            try {
+                const res = await fetch('/sistema/public/api/empleados');
+                const data = await res.json();
+                if (!data.success) {
+                    alert('Error al cargar empleados');
+                    return;
+                }
+                listaEmpleados.innerHTML = '';
+                data.empleados.forEach(emp => {
+                    listaEmpleados.innerHTML += `
+                        <tr>
+                            <td>${emp.nombre}</td>
+                            <td>${emp.apellido}</td>
+                            <td>${emp.telefono ?? ''}</td>
+                            <td>${emp.ci}</td>
+                            <td>${emp.nombreTurno}</td>
+                            <td>${emp.salario}</td>
+                            <td>${emp.fechaContratacion}</td>
+                            <td>
+                                <button class="btnEditar" data-id="${emp.idUsuario}">Editar</button>
+                                <button class="btnEliminar" data-id="${emp.idUsuario}">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                // Asignar eventos botones editar y eliminar
+                document.querySelectorAll('.btnEditar').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.getAttribute('data-id');
+                        await cargarEmpleado(id);
+                    });
+                });
+
+                document.querySelectorAll('.btnEliminar').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = btn.getAttribute('data-id');
+                        eliminarEmpleado(id);
+                    });
+                });
+
+            } catch (error) {
+                alert('Error al cargar empleados: ' + error.message);
+            }
+        }
+
+        // Cargar datos de un empleado para editar
+        async function cargarEmpleado(idUsuario) {
+            try {
+                const res = await fetch(`/sistema/public/api/empleados?idUsuario=${idUsuario}`);
+                const data = await res.json();
+                if (!data.success) {
+                    alert('Empleado no encontrado');
+                    return;
+                }
+
+                modalTitulo.textContent = "Editar Empleado";
+                // Los datos vienen en data.empleado
+                const emp = data.empleado;
+
+                document.getElementById('idUsuario').value = emp.idUsuario;
+                document.getElementById('idCredenciales').value = emp.idCredenciales ?? '';
+                document.getElementById('correo').value = emp.correo ?? '';
+                document.getElementById('nombre').value = emp.nombre;
+                document.getElementById('apellido').value = emp.apellido;
+                document.getElementById('telefono').value = emp.telefono ?? '';
+                document.getElementById('ci').value = emp.ci;
+                document.getElementById('salario').value = emp.salario;
+                document.getElementById('fechaContratacion').value = emp.fechaContratacion;
+                document.getElementById('idTurno').value = emp.idTurno;
+
+                // En edición, contraseña no es obligatoria
+                formEmpleado.contrasena.required = false;
+                formEmpleado.confirmarContrasena.required = false;
+                formEmpleado.contrasena.value = '';
+                formEmpleado.confirmarContrasena.value = '';
+
+                modalEmpleado.style.display = 'block';
+                overlay.style.display = 'block';
+
+            } catch (error) {
+                alert('Error al cargar empleado: ' + error.message);
+            }
+        }
+
+        // Crear o actualizar empleado
+        formEmpleado.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validar confirmación de contraseña
+            if (formEmpleado.contrasena.value !== formEmpleado.confirmarContrasena.value) {
+                alert('Las contraseñas no coinciden');
+                return;
+            }
+
+            const idUsuario = document.getElementById('idUsuario').value;
+
+            // Construir payload
+            const empleadoData = {
+                idUsuario: idUsuario ? parseInt(idUsuario) : null,
+                idCredenciales: document.getElementById('idCredenciales').value || null,
+                correo: formEmpleado.correo.value,
+                contrasena: formEmpleado.contrasena.value,
+                nombre: formEmpleado.nombre.value,
+                apellido: formEmpleado.apellido.value,
+                telefono: formEmpleado.telefono.value,
+                ci: formEmpleado.ci.value,
+                salario: parseFloat(formEmpleado.salario.value),
+                fechaContratacion: formEmpleado.fechaContratacion.value,
+                idTurno: parseInt(formEmpleado.idTurno.value)
+            };
+
+            try {
+                let url = '/sistema/public/api/empleados';
+                let method = idUsuario ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(empleadoData)
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    alert('Error: ' + (data.message || 'Error al guardar empleado'));
+                    return;
+                }
+
+                alert(data.message || 'Empleado guardado correctamente');
+                cerrarModal();
+                cargarEmpleados();
+
+            } catch (error) {
+                alert('Error al guardar empleado: ' + error.message);
+            }
+        });
+
+        // Eliminar empleado (lógica blanda)
+        async function eliminarEmpleado(idUsuario) {
+            if (!confirm('¿Seguro que deseas eliminar este empleado?')) return;
+
+            try {
+                const res = await fetch('/sistema/public/api/empleados', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idUsuario: parseInt(idUsuario) })
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    alert('Error: ' + (data.message || 'No se pudo eliminar'));
+                    return;
+                }
+
+                alert(data.message || 'Empleado eliminado');
+                cargarEmpleados();
+
+            } catch (error) {
+                alert('Error al eliminar empleado: ' + error.message);
+            }
+        }
+        // Al cargar página, cargar empleados
+        window.addEventListener('load', cargarEmpleados);
+    </script>
+    <script src="../../assets/js/navbarAdmin.js"></script>
+</body>
+
+</html>

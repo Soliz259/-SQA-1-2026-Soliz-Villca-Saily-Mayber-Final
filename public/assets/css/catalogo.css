@@ -1,0 +1,314 @@
+:root {
+    --negro: #121212;
+    --negro-oscuro: #000000;
+    --amarillo: #F4A300;
+    --amarillo-hover: #FFC933;
+    --blanco: #FFFFFF;
+    --gris: #1E1E1E;
+    --gris-claro: #CCCCCC;
+    --rojo: #FF3333;
+}
+
+.alerta-login,
+.alerta-exito {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #ff4d4f;
+    /* Rojo por defecto (alerta-login) */
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-weight: 600;
+    z-index: 9999;
+    font-family: 'Poppins', sans-serif;
+    opacity: 0;
+    /* Inicialmente oculta para animación */
+}
+
+.alerta-exito {
+    background-color: #4caf50;
+    /* Verde para éxito */
+}
+
+
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--negro);
+    color: var(--blanco);
+    min-height: 100vh;
+}
+
+/* Header mejorado pero compatible con header.js */
+header {
+    background-color: var(--negro-oscuro);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--blanco);
+    transition: transform 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+.logo span {
+    color: var(--amarillo);
+}
+
+#navegacion {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+#navegacion a {
+    text-decoration: none;
+    color: var(--amarillo);
+    font-weight: 600;
+    position: relative;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#navegacion a:hover {
+    color: var(--amarillo-hover);
+}
+
+.login-btn {
+    background-color: var(--amarillo);
+    color: var(--negro);
+    text-decoration-color: #000000;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+    background-color: var(--amarillo-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(244, 163, 0, 0.3);
+}
+
+.carrito-contador {
+    background-color: var(--rojo);
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    padding: 2px 6px;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+.user-icon {
+    cursor: pointer;
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.user-icon:hover {
+    transform: scale(1.2);
+    color: var(--amarillo-hover);
+}
+
+.menu-usuario {
+    position: absolute;
+    top: 35px;
+    right: 0;
+    background-color: var(--gris);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    display: none;
+    flex-direction: column;
+    min-width: 150px;
+    z-index: 1001;
+    overflow: hidden;
+}
+
+.menu-usuario a {
+    color: var(--blanco);
+    text-decoration: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.menu-usuario a:hover {
+    background-color: var(--amarillo);
+    color: var(--negro);
+}
+
+/* Catálogo mejorado */
+.menu-container {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.menu-container h2 {
+    text-align: center;
+    font-size: 36px;
+    color: var(--amarillo);
+    margin-bottom: 30px;
+    position: relative;
+    display: inline-block;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.menu-container h2 span {
+    color: var(--blanco);
+}
+
+.productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    justify-items: center;
+}
+
+.producto {
+    background-color: var(--gris);
+    border-radius: 15px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 300px;
+    height: auto; /* Asegura que la altura sea automática */
+    transition: all 0.4s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.producto.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.producto:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(244, 163, 0, 0.3);
+}
+
+.producto img {
+    width: 100%;
+    height: 380px; /* Aumenté de 200px a 280px */
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+.producto:hover img {
+    transform: scale(1.03); /* Reduje ligeramente el scale para que no se salga */
+}
+
+.producto-content {
+    padding: 20px;
+}
+
+.producto h3 {
+    font-size: 20px;
+    margin: 0 0 10px 0;
+    color: var(--blanco);
+}
+
+.producto p {
+    font-size: 14px;
+    color: var(--gris-claro);
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.precio {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--amarillo);
+    margin: 15px 0;
+}
+
+.btn {
+    background-color: var(--amarillo);
+    color: var(--negro);
+    border: none;
+    padding: 12px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn:hover {
+    background-color: var(--amarillo-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(244, 163, 0, 0.4);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    header {
+        padding: 15px;
+    }
+
+    .menu-container {
+        padding: 30px 15px;
+    }
+
+    .menu-container h2 {
+        font-size: 28px;
+    }
+
+    .productos {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-container h2 {
+        font-size: 24px;
+    }
+
+    #navegacion a span.login-text {
+        display: none;
+    }
+
+    #navegacion a i {
+        font-size: 20px;
+    }
+}
+
+.logo a {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    font-weight: bold;
+}

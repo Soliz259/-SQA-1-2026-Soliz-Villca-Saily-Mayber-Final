@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguridad | Pollos Express</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../assets/css/client/seguridadCliente.css">
+</head>
+
+<body>
+    <button id="toggleMenu" class="hamburguesa">&#9776;</button>
+    <aside>
+        <div class="logo">
+            <a href="../../index.php">
+                <h1>Pollos <span>Express</span></h1>
+            </a>
+        </div>
+        <div id="navbar-container"></div>
+        <button class="btn-cerrar" onclick="cerrarSesion()">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </button>
+    </aside>
+
+    <main>
+        <section class="seccion">
+            <h2>Actualizar Datos Personales</h2>
+            <form id="formDatos">
+                <div class="form-group">
+                    <label for="nombre">Nombre</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="apellido">Apellido</label>
+                    <input type="text" id="apellido" name="apellido" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input type="text" id="telefono" name="telefono" pattern="\d{8}"
+                        title="El teléfono debe tener exactamente 8 dígitos" required>
+                    <small class="error-text" id="telefonoError"></small>
+                </div>
+                <button type="submit">Actualizar Datos</button>
+                <div class="success-message" id="datosSuccess"></div>
+                <div class="error-message" id="datosError"></div>
+            </form>
+        </section>
+
+        <section class="seccion">
+            <h2>Cambiar Contraseña</h2>
+            <form id="formPassword">
+                <div class="form-group">
+                    <label for="actual">Contraseña Actual</label>
+                    <input type="password" id="actual" name="actual" required>
+                </div>
+                <div class="form-group">
+                    <label for="nueva">Nueva Contraseña</label>
+                    <input type="password" id="nueva" name="nueva" minlength="8" required>
+                    <small class="error-text" id="nuevaError"></small>
+                </div>
+                <div class="form-group">
+                    <label for="confirmar">Confirmar Nueva Contraseña</label>
+                    <input type="password" id="confirmar" name="confirmar" minlength="8" required>
+                    <small class="error-text" id="confirmarError"></small>
+                </div>
+                <button type="submit">Cambiar Contraseña</button>
+                <div class="success-message" id="passwordSuccess"></div>
+                <div class="error-message" id="passwordError"></div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        function cerrarSesion() {
+            localStorage.removeItem("correoLogeado");
+            location.href = "../../logout.php";
+        }
+
+        fetch("/sistema/public/estadoSesion.php")
+            .then(res => res.json())
+            .then(data => {
+                if (!data.logeado) {
+                    alert("Sesión no iniciada.");
+                    location.href = "/login.php";  // ruta absoluta desde raíz
+                } else {
+                    console.log("Usuario logeado:", data.correo);
+                }
+            })
+            .catch(() => {
+                alert("Error al verificar sesión.");
+                location.href = "/sistema/public/login.php";  // ruta absoluta también aquí
+            });
+
+        // Cargar datos del usuario
+        fetch("/sistema/public/api/datos-cliente", {
+            method: "POST"
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const u = data.usuario;
+                    document.getElementById("nombre").value = u.nombre;
+                    document.getElementById("apellido").value = u.apellido;
+                    document.getElementById("telefono").value = u.telefono;
+                }
+            });
+
+        document.getElementById("formDatos").addEventListener("submit", e => {
+            e.preventDefault();
+
+            const datosSuccess = document.getElementById("datosSuccess");
+            const datosError = document.getElementById("datosError");
+            const telefonoError = document.getElementById("telefonoError");
+            const telefono = document.getElementById("telefono").value.trim();
+
+            // Resetear mensajes
+            datosSuccess.style.display = "none";
+            datosError.style.display = "none";
+            telefonoError.style.display = "none";
+
+            // Validar teléfono
+            if (!/^\d{8}$/.test(telefono)) {
+                telefonoError.textContent = "El teléfono debe tener exactamente 8 dígitos numéricos.";
+                telefonoError.style.display = "block";
+                return;
+            }
+
+            // Validar nombre y apellido (solo letras y espacios)
+            const nombre = document.getElementById("nombre").value.trim();
+            const apellido = document.getElementById("apellido").value.trim();
+            
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) {
+                datosError.textContent = "El nombre solo puede contener letras y espacios.";
+                datosError.style.display = "block";
+                return;
+            }
+
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(apellido)) {
+                datosError.textContent = "El apellido solo puede contener letras y espacios.";
+                datosError.style.display = "block";
+                return;
+            }
+
+            const datos = Object.fromEntries(new FormData(e.target).entries());
+
+            fetch("/sistema/public/api/actualizar-datos-cliente", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(datos)
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        datosSuccess.textContent = data.mensaje;
+                        datosSuccess.style.display = "block";
+                    } else {
+                        datosError.textContent = data.mensaje;
+                        datosError.style.display = "block";
+                    }
+                })
+                .catch(err => {
+                    datosError.textContent = "Error al procesar la solicitud";
+                    datosError.style.display = "block";
+                });
+        });
+
+        // Cambiar contraseña
+        document.getElementById("formPassword").addEventListener("submit", e => {
+            e.preventDefault();
+
+            const passwordSuccess = document.getElementById("passwordSuccess");
+            const passwordError = document.getElementById("passwordError");
+            const nuevaError = document.getElementById("nuevaError");
+            const confirmarError = document.getElementById("confirmarError");
+
+            // Resetear mensajes
+            passwordSuccess.style.display = "none";
+            passwordError.style.display = "none";
+            nuevaError.style.display = "none";
+            confirmarError.style.display = "none";
+
+            const actual = document.getElementById("actual").value.trim();
+            const nueva = document.getElementById("nueva").value.trim();
+            const confirmar = document.getElementById("confirmar").value.trim();
+
+            // Validar campos vacíos
+            if (!actual || !nueva || !confirmar) {
+                passwordError.textContent = "Todos los campos son obligatorios.";
+                passwordError.style.display = "block";
+                return;
+            }
+
+            // Validar longitud mínima de contraseña
+            if (nueva.length < 8) {
+                nuevaError.textContent = "La contraseña debe tener al menos 8 caracteres.";
+                nuevaError.style.display = "block";
+                return;
+            }
+
+            // Validar que la nueva contraseña no sea igual a la actual
+            if (actual === nueva) {
+                nuevaError.textContent = "La nueva contraseña no puede ser igual a la actual.";
+                nuevaError.style.display = "block";
+                return;
+            }
+
+            // Validar que las contraseñas coincidan
+            if (nueva !== confirmar) {
+                confirmarError.textContent = "Las contraseñas no coinciden.";
+                confirmarError.style.display = "block";
+                return;
+            }
+
+            // Validar fortaleza de contraseña (al menos una mayúscula, una minúscula y un número)
+            if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/.test(nueva)) {
+                nuevaError.textContent = "La contraseña debe contener al menos una mayúscula, una minúscula y un número.";
+                nuevaError.style.display = "block";
+                return;
+            }
+
+            fetch("/sistema/public/api/actualizar-contrasena", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ actual, nueva })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        passwordSuccess.textContent = data.mensaje;
+                        passwordSuccess.style.display = "block";
+                        e.target.reset();
+                    } else {
+                        passwordError.textContent = data.mensaje;
+                        passwordError.style.display = "block";
+                    }
+                })
+                .catch(err => {
+                    console.error("Error al cambiar contraseña:", err);
+                    passwordError.textContent = "Error al procesar la solicitud.";
+                    passwordError.style.display = "block";
+                });
+        });
+    </script>
+    <script src="../../assets/js/navbar.js"></script>
+    <script src="../../assets/js/hamburguesa.js"></script>
+</body>
+
+</html>

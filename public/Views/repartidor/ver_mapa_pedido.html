@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa del Pedido | Pollos Express</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Fuente Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/repartidor/mapa.css">
+</head>
+
+<body>
+  <header class="map-header">
+    <h1><i class="fas fa-map-marked-alt"></i> <span>Seguimiento del Pedido</span></h1>
+    <button class="btn-back" onclick="window.location.href='panel_repartidor.html'">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+  </header>
+
+  <div id="mapa"></div>
+
+  <!-- Panel de información (se llenará con JS) -->
+  <div class="map-info-panel" id="infoPanel" style="display: none;">
+    <h3><i class="fas fa-info-circle"></i> Detalles del Pedido</h3>
+    <div class="info-item"><i class="fas fa-hashtag"></i> <span id="pedidoId">-</span></div>
+    <div class="info-item"><i class="fas fa-user"></i> <span id="clienteNombre">-</span></div>
+    <div class="info-item"><i class="fas fa-map-marker-alt"></i> <span id="direccion">-</span></div>
+  </div>
+
+  <!-- Loader -->
+  <div class="map-loader" id="loader">
+    <div class="spinner"></div>
+    <p>Cargando mapa...</p>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Font Awesome JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const idVenta = localStorage.getItem("idVentaMapa");
+      const loader = document.getElementById('loader');
+      const infoPanel = document.getElementById('infoPanel');
+
+      if (!idVenta) {
+        alert("ID de venta no encontrado");
+        window.location.href = "panel_repartidor.html";
+        return;
+      }
+
+      loader.style.display = 'flex';
+
+      fetch("/sistema/public/api/repartidores/ver-mapa-pedido", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idVenta: Number(idVenta) }),
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Respuesta no válida del servidor");
+          return res.json();
+        })
+        .then(data => {
+          loader.style.display = 'none';
+
+          if (!data.success) {
+            alert(data.mensaje || "No se pudo obtener la ubicación");
+            window.location.href = "panel_repartidor.html";
+            return;
+          }
+
+          // Construye el nombre completo
+          const nombreCompleto = `${data.nombre} ${data.apellido}`;
+
+          // Inicializar mapa centrado en la ubicación
+          const mapa = L.map("mapa").setView([data.latitud, data.longitud], 16);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(mapa);
+
+          // Icono personalizado
+          const icono = L.divIcon({
+            html: '<i class="fas fa-map-marker-alt" style="color: #FF5252; font-size: 32px;"></i>',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            className: 'leaflet-div-icon'
+          });
+
+          // Añadir marcador y popup
+          L.marker([data.latitud, data.longitud], { icon: icono })
+            .addTo(mapa)
+            .bindPopup(`
+                <div style="font-family: 'Poppins', sans-serif;">
+                    <h4 style="margin:0 0 5px;color:var(--amarillo);">Destino del pedido</h4>
+                    <p style="margin:0;"><strong>Cliente:</strong> ${nombreCompleto}</p>
+                    <p style="margin:5px 0 0 0;"><strong>Dirección:</strong> ${data.direccion}</p>
+                    <p style="margin:5px 0 0 0;"><strong>Referencia:</strong> ${data.referencia}</p>
+                </div>
+            `)
+            .openPopup();
+
+          // Rellena el panel de info
+          document.getElementById('pedidoId').textContent = `Pedido #${idVenta}`;
+          document.getElementById('clienteNombre').textContent = nombreCompleto;
+          document.getElementById('direccion').textContent = data.direccion;
+          // Si quieres mostrar referencia en el panel puedes añadir otro <div> en el HTML
+          // document.getElementById('referencia').textContent  = data.referencia;
+
+          infoPanel.style.display = 'block';
+
+          // Ajuste para que el popup no quede tapado
+          mapa.on('popupopen', () => {
+            const px = mapa.project(mapa.getCenter());
+            px.y -= 120;
+            mapa.panTo(mapa.unproject(px), { animate: true });
+          });
+
+        })
+        .catch(error => {
+          loader.style.display = 'none';
+          console.error(error);
+          alert("Error al cargar mapa");
+          window.location.href = "panel_repartidor.html";
+        });
+    });
+  </script>
+
+</body>
+
+</html>
