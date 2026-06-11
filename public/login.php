@@ -122,6 +122,8 @@ if (
         });
         const btn = document.querySelector('#btnLogin');
         ['mouseenter', 'mouseleave', 'mousedown', 'mouseup'].forEach(evt => {
+            if (!btn) return;
+
             btn.addEventListener(evt, () => {
                 const scale = evt === 'mouseenter' ? 1.05 : evt === 'mouseleave' ? 1 : evt === 'mousedown' ? 0.95 : 1.05;
                 gsap.to(btn, {
@@ -132,7 +134,9 @@ if (
         });
 
         // Lógica de login por AJAX
-        document.getElementById("formLogin").addEventListener("submit", function(e) {
+        const formLogin = document.getElementById("formLogin");
+        if (formLogin) {
+        formLogin.addEventListener("submit", function(e) {
             e.preventDefault();
             const datos = {
                 correo: document.getElementById("correo").value,
@@ -145,7 +149,13 @@ if (
                     },
                     body: JSON.stringify(datos)
                 })
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}`);
+                    }
+
+                    return res.json();
+                })
                 .then(data => {
                     if (data.success) {
 
@@ -170,6 +180,7 @@ if (
                 })
                 .catch(() => alert("Error al conectar con el servidor."));
         });
+        }
     </script>
 </body>
 

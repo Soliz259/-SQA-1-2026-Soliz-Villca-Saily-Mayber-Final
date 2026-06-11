@@ -95,22 +95,22 @@
             location.href = "../../logout.php";
         }
 
-        fetch("/sistema/public/estadoSesion.php")
+        fetch("/sistema_Pollos/public/estadoSesion.php")
             .then(res => res.json())
             .then(data => {
                 if (!data.logeado) {
                     alert("Sesión no iniciada.");
-                    location.href = "/login.php";
+                    location.href = "/sistema_Pollos/public/login.php";
                 } else {
                     console.log("Usuario logeado:", data.correo);
                 }
             })
             .catch(() => {
                 alert("Error al verificar sesión.");
-                location.href = "/sistema/public/login.php";
+                location.href = "/sistema_Pollos/public/login.php";
             });
 
-        fetch("/sistema/public/api/datos-cliente", {
+        fetch("/sistema_Pollos/public/api/datos-cliente", {
             method: "POST"
         })
             .then(res => res.json())
@@ -118,31 +118,41 @@
                 if (data.success) {
                     const u = data.usuario;
                     const d = data.direccion || {};
+                    const setText = (id, value) => {
+                        const element = document.getElementById(id);
+                        if (element) element.textContent = value ?? "";
+                    };
 
-                    document.getElementById("nombreUsuario").textContent = u.nombre;
-                    document.getElementById("nombreCompleto").textContent = `${u.nombre} ${u.apellido}`;
-                    document.getElementById("correo").textContent = u.correo;
-                    document.getElementById("telefono").textContent = u.telefono;
-                    document.getElementById("ci").textContent = u.ci;
-                    document.getElementById("fechaRegistro").textContent = u.fechaRegistro;
+                    setText("nombreUsuario", u.nombre);
+                    setText("nombreCompleto", `${u.nombre} ${u.apellido}`);
+                    setText("correo", u.correo);
+                    setText("telefono", u.telefono);
+                    setText("ci", u.ci);
+                    setText("fechaRegistro", u.fechaRegistro);
 
                     // Mapa
-                    mapa = L.map('mapa').setView([-16.5, -68.15], 13);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© OpenStreetMap contributors'
-                    }).addTo(mapa);
+                    const mapaElement = document.getElementById('mapa');
+                    if (mapaElement) {
+                        mapa = L.map('mapa').setView([-16.5, -68.15], 13);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: 'OpenStreetMap contributors'
+                        }).addTo(mapa);
 
-                    if (d.latitud && d.longitud) {
-                        const latLng = [parseFloat(d.latitud), parseFloat(d.longitud)];
-                        marcador = L.marker(latLng).addTo(mapa)
-                            .bindPopup("Tu ubicación registrada")
-                            .openPopup();
-                        mapa.setView(latLng, 15);
+                        if (d.latitud && d.longitud) {
+                            const latLng = [parseFloat(d.latitud), parseFloat(d.longitud)];
+                            marcador = L.marker(latLng).addTo(mapa)
+                                .bindPopup("Tu ubicacion registrada")
+                                .openPopup();
+                            mapa.setView(latLng, 15);
+                        }
                     }
                     // Listener solo para redireccionar con datos ya cargados
-                    document.getElementById("editarUbicacion").addEventListener("click", () => {
-                        location.href = "direccionCliente.html";
-                    });
+                    const editarUbicacion = document.getElementById("editarUbicacion");
+                    if (editarUbicacion) {
+                        editarUbicacion.addEventListener("click", () => {
+                            location.href = "direccionCliente.html";
+                        });
+                    }
 
                 } else {
                     alert(data.mensaje);

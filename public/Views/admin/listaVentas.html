@@ -108,7 +108,7 @@
             const bienvenida = document.getElementById("bienvenida");
 
             // 1. Consultamos la sesión activa
-            fetch("/sistema/public/api/estado-sesion")
+            fetch("/sistema_Pollos/public/api/estado-sesion")
                 .then(res => res.json())
                 .then(data => {
                     if (!data.logeado) {
@@ -119,7 +119,7 @@
                     const correo = data.correo;
 
                     // 2. Con el correo recuperado, pedimos los datos del usuario
-                    return fetch("/sistema/public/api/obtener-usuario", {
+                    return fetch("/sistema_Pollos/public/api/obtener-usuario", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ correo })
@@ -173,7 +173,7 @@
         });
 
         setTimeout(() => {
-            fetch("/sistema/public/api/todas-las-ventas")
+            fetch("/sistema_Pollos/public/api/todas-las-ventas")
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.ventas) {

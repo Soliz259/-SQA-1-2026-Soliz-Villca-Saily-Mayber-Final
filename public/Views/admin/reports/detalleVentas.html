@@ -22,7 +22,7 @@
         const params = new URLSearchParams(window.location.search);
         const idVenta = params.get('id');
 
-        fetch('/sistema/public/api/ver-venta', {
+        fetch('/sistema_Pollos/public/api/ver-venta', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ idVenta: parseInt(idVenta) })

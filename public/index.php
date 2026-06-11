@@ -40,7 +40,7 @@ session_start();
         <div class="productos">
             <div class="producto">
                 <img
-                    src="https://scontent.flpb3-1.fna.fbcdn.net/v/t39.30808-6/495447455_1238371188295960_1174213894042982498_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=833d8c&_nc_ohc=Abwqv8JBORAQ7kNvwGOzYJs&_nc_oc=AdmvxYtNcBNKq1Y_VRyf636_zm5wBB5vv8PZ1Q3LNANxugt3cJT9H0WdDcNCTiOIRCg&_nc_zt=23&_nc_ht=scontent.flpb3-1.fna&_nc_gid=PJt65T0UkAhcLUwJjV5uAQ&oh=00_AfP6QF-W4pZaqv5V_QgQTjjBWxGigttXQU_eMkGjdtZAxQ&oe=6856A188"
+                    src="https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=800&q=80"
                     alt="Pollo Clásico" class="producto-img">
                 <div class="producto-content">
                     <h4>Ramito Express</h4>
@@ -52,7 +52,7 @@ session_start();
             </div>
             <div class="producto">
                 <img
-                    src="https://scontent.flpb3-2.fna.fbcdn.net/v/t39.30808-6/500389650_1247203944079351_242180034821093023_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=127cfc&_nc_ohc=09NlxIeiRbkQ7kNvwGHaxvL&_nc_oc=Adlu99MQ1c4YdkQzlRo-R3EJ7dS-_TqUwLj1TXZpArbWa_QZN6Z6E8zzFOsWidlAe_g&_nc_zt=23&_nc_ht=scontent.flpb3-2.fna&_nc_gid=6drnaBVkX7Od8gBwuZI4lA&oh=00_AfPnYi0ZiKeTq5G5niSVjcvzGGnU4i3PR7-LpTreDiuBPg&oe=6856C131"
+                    src="https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=800&q=80"
                     alt="Combo Familiar" class="producto-img">
                 <div class="producto-content">
                     <h4>Pollo a la canasta</h4>
@@ -64,7 +64,7 @@ session_start();
             </div>
             <div class="producto">
                 <img
-                    src="https://scontent.flpb3-1.fna.fbcdn.net/v/t39.30808-6/506420430_1266853392114406_7803059230299727894_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=f9vll-w119YQ7kNvwHATHQ3&_nc_oc=AdnMruMkR3yJbdZTTlAzo8hTSH59T5T0X98EjjleHQ4CToA8qR9QnQx6ySYOM8Y_sHo&_nc_zt=23&_nc_ht=scontent.flpb3-1.fna&_nc_gid=4x2C_eGguvJqeW3ELC5VKw&oh=00_AfOhX8gaNNUsVnqKKQzMudZt0-PSVX5LPr2QBlnY5c96tA&oe=6856911C"
+                    src="https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=800&q=80"
                     alt="Alitas Picantes" class="producto-img">
                 <div class="producto-content">
                     <h4>Super Crocante</h4>
@@ -145,6 +145,8 @@ session_start();
         // Header scroll effect
         window.addEventListener('scroll', function() {
             const header = document.getElementById('mainHeader');
+            if (!header) return;
+
             if (window.scrollY > 50) {
                 header.classList.add('scrolled');
             } else {

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" role="img" aria-labelledby="title desc">
+  <title id="title">Super Crocante</title>
+  <desc id="desc">Ilustracion local de piezas crocantes de pollo</desc>
+  <rect width="800" height="520" fill="#fff7e7"/>
+  <path d="M0 370c95-40 175-22 255 4s160 40 255 2 190-32 290 10v134H0z" fill="#f0c16b"/>
+  <circle cx="170" cy="120" r="62" fill="#e7402f"/>
+  <circle cx="660" cy="165" r="88" fill="#f6b13d"/>
+  <path d="M258 245c24-74 110-104 174-58 59-43 149-16 170 56 22 76-36 151-116 151H358c-77 0-124-76-100-149z" fill="#9e5122"/>
+  <path d="M304 258c18-47 72-66 115-35 40-29 101-10 116 37 15 50-25 98-78 98h-88c-53 0-82-50-65-100z" fill="#d9822b"/>
+  <circle cx="365" cy="258" r="22" fill="#f5b54a"/>
+  <circle cx="458" cy="258" r="25" fill="#f5b54a"/>
+  <circle cx="416" cy="318" r="19" fill="#f5b54a"/>
+  <path d="M224 405h380" stroke="#8a431e" stroke-width="22" stroke-linecap="round"/>
+</svg>

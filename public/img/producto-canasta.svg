@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" role="img" aria-labelledby="title desc">
+  <title id="title">Pollo a la canasta</title>
+  <desc id="desc">Ilustracion local de una canasta de pollo</desc>
+  <rect width="800" height="520" fill="#fef0d5"/>
+  <path d="M110 355c75-120 500-135 585 0l-46 90H158z" fill="#b75f26"/>
+  <path d="M160 330h490l-36 103H196z" fill="#e3973a"/>
+  <path d="M185 350h430M205 390h390M254 328l-48 105M348 320l-24 113M447 320l14 113M545 330l38 103" stroke="#7c3e1b" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="306" cy="245" r="74" fill="#cf742b"/>
+  <circle cx="410" cy="214" r="84" fill="#dd8a36"/>
+  <circle cx="506" cy="255" r="72" fill="#c86829"/>
+  <path d="M262 220c32-42 82-62 150-61 69 1 123 25 165 72" fill="none" stroke="#8b421d" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="600" cy="98" r="72" fill="#ffcc55"/>
+</svg>

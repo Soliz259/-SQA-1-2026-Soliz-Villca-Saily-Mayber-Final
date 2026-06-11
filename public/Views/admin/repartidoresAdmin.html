@@ -128,7 +128,7 @@
     <!-- Scripts (se mantienen igual) -->
     <script>
         async function cargarListaRepartidores() {
-            const response = await fetch('/sistema/public/api/repartidores');
+            const response = await fetch('/sistema_Pollos/public/api/repartidores');
             const repartidores = await response.json();
 
             const tbody = document.getElementById('listaRepartidores');
@@ -210,7 +210,7 @@
 
             const idUsuario = document.getElementById('editIdUsuario').value;
 
-            const res = await fetch(`/sistema/public/api/repartidores?idUsuario=${idUsuario}`, {
+            const res = await fetch(`/sistema_Pollos/public/api/repartidores?idUsuario=${idUsuario}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -266,7 +266,7 @@
 
             const idUsuario = document.getElementById("idUsuario").value;
 
-            const response = await fetch('/sistema/public/api/repartidores', {
+            const response = await fetch('/sistema_Pollos/public/api/repartidores', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -289,7 +289,7 @@
 
         // Cargar empleados disponibles para asignar
         async function cargarEmpleadosDisponibles() {
-            const response = await fetch('/sistema/public/api/empleados-disponibles'); // Define esta ruta en tu backend
+            const response = await fetch('/sistema_Pollos/public/api/empleados-disponibles'); // Define esta ruta en tu backend
             const empleados = await response.json();
 
             const select = document.getElementById('idUsuario');

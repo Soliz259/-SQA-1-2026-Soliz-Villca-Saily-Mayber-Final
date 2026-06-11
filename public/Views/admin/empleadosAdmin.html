@@ -160,7 +160,7 @@
         // Cargar lista de empleados
         async function cargarEmpleados() {
             try {
-                const res = await fetch('/sistema/public/api/empleados');
+                const res = await fetch('/sistema_Pollos/public/api/empleados');
                 const data = await res.json();
                 if (!data.success) {
                     alert('Error al cargar empleados');
@@ -208,7 +208,7 @@
         // Cargar datos de un empleado para editar
         async function cargarEmpleado(idUsuario) {
             try {
-                const res = await fetch(`/sistema/public/api/empleados?idUsuario=${idUsuario}`);
+                const res = await fetch(`/sistema_Pollos/public/api/empleados?idUsuario=${idUsuario}`);
                 const data = await res.json();
                 if (!data.success) {
                     alert('Empleado no encontrado');
@@ -272,7 +272,7 @@
             };
 
             try {
-                let url = '/sistema/public/api/empleados';
+                let url = '/sistema_Pollos/public/api/empleados';
                 let method = idUsuario ? 'PUT' : 'POST';
 
                 const res = await fetch(url, {
@@ -301,7 +301,7 @@
             if (!confirm('¿Seguro que deseas eliminar este empleado?')) return;
 
             try {
-                const res = await fetch('/sistema/public/api/empleados', {
+                const res = await fetch('/sistema_Pollos/public/api/empleados', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ idUsuario: parseInt(idUsuario) })

@@ -14,8 +14,7 @@ class HeaderComponent extends HTMLElement {
 
   async loadSessionData() {
     try {
-      const response = await fetch("estadoSesion.php");
-      const data = await response.json();
+      const data = await this.fetchJson("estadoSesion.php");
 
       if (data.logeado) {
         this.enlacePanel = this.getPanelLink(data.rol);
@@ -24,6 +23,20 @@ class HeaderComponent extends HTMLElement {
     } catch (error) {
       console.error("Error loading session data:", error);
     }
+  }
+
+  getPublicUrl(path) {
+    return new URL(`/sistema_Pollos/public/${path}`, window.location.origin);
+  }
+
+  async fetchJson(path, options = {}) {
+    const response = await fetch(this.getPublicUrl(path), options);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} al cargar ${path}`);
+    }
+
+    return response.json();
   }
 
   getPanelLink(rol) {
@@ -309,8 +322,7 @@ class HeaderComponent extends HTMLElement {
 
   async updateCart() {
     try {
-      const response = await fetch("api/ver-carrito");
-      const data = await response.json();
+      const data = await this.fetchJson("api/ver-carrito");
       const cantidad = data?.productos?.length || 0;
       const contador = this.shadowRoot.querySelector('.carrito-contador');
       if (contador) contador.textContent = cantidad;

@@ -73,7 +73,7 @@
             location.href = "../../logout.php";
         }
 
-        fetch("/sistema/public/estadoSesion.php")
+        fetch("/sistema_Pollos/public/estadoSesion.php")
             .then(res => res.json())
             .then(data => {
                 if (!data.logeado) {
@@ -85,7 +85,7 @@
             })
             .catch(() => {
                 alert("Error al verificar sesión.");
-                location.href = "/sistema/public/login.php";  // ruta absoluta también aquí
+                location.href = "/sistema_Pollos/public/login.php";  // ruta absoluta también aquí
             });
 
 
@@ -98,7 +98,7 @@
         }
 
         function cargarPedidos() {
-            fetch("/sistema/public/api/mis-pedidos")
+            fetch("/sistema_Pollos/public/api/mis-pedidos")
                 .then(res => res.json())
                 .then(data => {
                     const tbody = document.getElementById("tablaPedidos");
@@ -193,7 +193,7 @@
             * Ahora utiliza el endpoint MVC /api/detalle-pedido y el campo idPedido.
         */
         function verDetalle(idPedido) {
-            fetch("/sistema/public/api/detalle-pedido", {
+            fetch("/sistema_Pollos/public/api/detalle-pedido", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ idPedido })
@@ -237,7 +237,7 @@
         function cancelarPedido(idVenta) {
             if (!confirm("¿Estás seguro de cancelar este pedido?")) return;
 
-            fetch("/sistema/public/api/cancelar-pedido", {
+            fetch("/sistema_Pollos/public/api/cancelar-pedido", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ idVenta })

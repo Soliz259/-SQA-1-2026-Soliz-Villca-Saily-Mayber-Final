@@ -105,7 +105,7 @@
             localStorage.removeItem("correoLogeado");
             location.href = "../../logout.php";
         }
-        fetch("/sistema/public/estadoSesion.php")
+        fetch("/sistema_Pollos/public/estadoSesion.php")
             .then(res => res.json())
             .then(data => {
                 if (!data.logeado) {
@@ -117,24 +117,24 @@
             })
             .catch(() => {
                 alert("Error al verificar sesión.");
-                location.href = "/sistema/public/login.php";  // ruta absoluta también aquí
+                location.href = "/sistema_Pollos/public/login.php";  // ruta absoluta también aquí
             });
 
         document.addEventListener('DOMContentLoaded', function () {
             const bienvenida = document.getElementById("bienvenida");
 
             // Paso 1: Obtener estado de sesión (y el correo)
-            fetch("/sistema/public/api/estado-sesion")
+            fetch("/sistema_Pollos/public/api/estado-sesion")
                 .then(res => res.json())
                 .then(data => {
                     if (!data.logeado) {
                         bienvenida.innerText = "No hay usuario logueado.";
-                        location.href = "/sistema/public/login.php";
+                        location.href = "/sistema_Pollos/public/login.php";
                         return;
                     }
                     const correo = data.correo;
                     // Paso 2: Usar el correo en obtener-usuario
-                    return fetch("/sistema/public/api/obtener-usuario", {
+                    return fetch("/sistema_Pollos/public/api/obtener-usuario", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ correo })
@@ -147,7 +147,7 @@
                 .then(data => {
                     if (!data || !data.success) {
                         alert("No se pudo obtener los datos del usuario.");
-                        location.href = "/sistema/public/login.php";
+                        location.href = "/sistema_Pollos/public/login.php";
                         return;
                     }
                     const u = data.usuario;
@@ -171,7 +171,7 @@
                 .catch(err => {
                     console.error(err);
                     alert("Error al conectar con el servidor.");
-                    location.href = "/sistema/public/login.php";
+                    location.href = "/sistema_Pollos/public/login.php";
                 });
         });
     </script>

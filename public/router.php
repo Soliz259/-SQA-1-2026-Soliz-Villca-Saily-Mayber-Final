@@ -29,7 +29,7 @@ use App\Controllers\TurnoController;
 use App\Controllers\VehiculoTipoController;
 use App\Controllers\EmpleadoController;
 
-$basePath = '/sistema/public';
+$basePath = '/sistema_Pollos/public';
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 if (strpos($path, $basePath) === 0) {

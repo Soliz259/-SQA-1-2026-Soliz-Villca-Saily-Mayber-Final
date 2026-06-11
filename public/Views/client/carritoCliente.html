@@ -150,7 +150,7 @@
             let correo = null;
 
             // Paso 1: Consultar el estado de sesión
-            fetch("/sistema/public/estadoSesion.php")
+            fetch("/sistema_Pollos/public/estadoSesion.php")
                 .then(res => res.json())
                 .then(data => {
                     if (!data.logeado) {
@@ -175,7 +175,7 @@
             window.modificarCantidad = function (idProducto, cambio) {
                 if (!correo) return;
 
-                fetch("/sistema/public/api/modificar-cantidad-carrito", {
+                fetch("/sistema_Pollos/public/api/modificar-cantidad-carrito", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ correo, idProducto, cambio })
@@ -197,7 +197,7 @@
 
 
             function cargarCarrito() {
-                fetch("/sistema/public/api/ver-carrito", {
+                fetch("/sistema_Pollos/public/api/ver-carrito", {
                     method: "GET", // No necesitas POST si el correo ya está en sesión
                     headers: { "Content-Type": "application/json" }
                 })
@@ -238,18 +238,18 @@
                             const item = document.createElement("div");
                             item.className = "producto";
 
-                            let imagenUrl = p.imagenUrl;
-                            if (!imagenUrl || imagenUrl.trim() === "") {
-                                imagenUrl = 'https://i.gifer.com/VAyR.gif';
-                            } else if (!imagenUrl.startsWith('http') && !imagenUrl.startsWith('https')) {
-                                if (!imagenUrl.startsWith('/')) {
-                                    imagenUrl = 'images/productos/' + imagenUrl;
-                                }
+                            let imagenUrl = (p.imagenUrl || "").trim();
+                            const imagenFallback = "/sistema_Pollos/public/assets/img/logo-pollo.png";
+
+                            if (!imagenUrl || imagenUrl.includes("fbcdn.net") || imagenUrl.includes("fna.fbcdn.net")) {
+                                imagenUrl = imagenFallback;
+                            } else if (!imagenUrl.startsWith('http') && !imagenUrl.startsWith('https') && !imagenUrl.startsWith('/')) {
+                                imagenUrl = `/sistema_Pollos/public/${imagenUrl}`;
                             }
 
                             item.innerHTML = `
                     <img class="producto-img" src="${imagenUrl}" alt="${p.nombre}"
-                        onerror="this.onerror=null;this.src='https://i.gifer.com/VAyR.gif'">
+                        onerror="this.onerror=null;this.src='${imagenFallback}'">
                     <div class="producto-info">
                         <h4>${p.nombre}</h4>
                         <p>Precio unitario: Bs ${parseFloat(p.precio).toFixed(2)}</p>
@@ -284,7 +284,7 @@
 
                 if (!confirm("¿Confirmas que deseas realizar el pedido en efectivo?")) return;
 
-                fetch("/sistema/public/api/generar-pedido", {
+                fetch("/sistema_Pollos/public/api/generar-pedido", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({})

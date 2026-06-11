@@ -79,7 +79,7 @@
             location.href = "../../logout.php";
         }
 
-        fetch("/sistema/public/estadoSesion.php")
+        fetch("/sistema_Pollos/public/estadoSesion.php")
             .then(res => res.json())
             .then(data => {
                 if (!data.logeado) {
@@ -91,11 +91,11 @@
             })
             .catch(() => {
                 alert("Error al verificar sesión.");
-                location.href = "/sistema/public/login.php";  // ruta absoluta también aquí
+                location.href = "/sistema_Pollos/public/login.php";  // ruta absoluta también aquí
             });
 
         // Cargar datos del usuario
-        fetch("/sistema/public/api/datos-cliente", {
+        fetch("/sistema_Pollos/public/api/datos-cliente", {
             method: "POST"
         })
             .then(r => r.json())
@@ -146,7 +146,7 @@
 
             const datos = Object.fromEntries(new FormData(e.target).entries());
 
-            fetch("/sistema/public/api/actualizar-datos-cliente", {
+            fetch("/sistema_Pollos/public/api/actualizar-datos-cliente", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(datos)
@@ -221,7 +221,7 @@
                 return;
             }
 
-            fetch("/sistema/public/api/actualizar-contrasena", {
+            fetch("/sistema_Pollos/public/api/actualizar-contrasena", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ actual, nueva })

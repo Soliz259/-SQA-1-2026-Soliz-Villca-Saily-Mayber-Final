@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" role="img" aria-labelledby="title desc">
+  <title id="title">Ramito Express</title>
+  <desc id="desc">Ilustracion local de pollo frito con papas</desc>
+  <rect width="800" height="520" fill="#fff4dc"/>
+  <circle cx="640" cy="95" r="95" fill="#f6b13d"/>
+  <circle cx="155" cy="400" r="125" fill="#f3d6a2"/>
+  <ellipse cx="410" cy="390" rx="260" ry="42" fill="#c77b2a" opacity=".28"/>
+  <path d="M224 218h352l-44 205H268z" fill="#d92727"/>
+  <path d="M244 218h312l-28 38H272z" fill="#f8cf55"/>
+  <path d="M284 176h55l18 187h-55zM368 166h56l-2 197h-56zM452 178h58l-24 185h-56z" fill="#f4bd3b"/>
+  <path d="M286 300c0-54 42-98 96-98 20 0 38 6 53 16 17-25 45-41 77-41 55 0 100 45 100 100s-45 100-100 100H382c-54 0-96-25-96-77z" fill="#a95b24"/>
+  <circle cx="384" cy="274" r="54" fill="#d88934"/>
+  <circle cx="510" cy="258" r="67" fill="#d88934"/>
+  <circle cx="463" cy="333" r="52" fill="#c7772d"/>
+</svg>

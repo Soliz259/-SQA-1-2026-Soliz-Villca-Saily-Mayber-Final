@@ -192,7 +192,12 @@
 
 
     <script>
-        fetch('/sistema/public/api/cola-parametros')
+        const setTextIfExists = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        };
+
+        fetch('/sistema_Pollos/public/api/cola-parametros')
             .then(res => res.json())
             .then(data => {
                 if (!data.success) {
@@ -200,10 +205,10 @@
                     return;
                 }
                 const d = data.datos;
-                document.getElementById('lambda').textContent = d.lambda;
-                document.getElementById('mu').textContent = d.mu;
-                document.getElementById('c').textContent = d.c;
-                document.getElementById('rho').textContent = d.rho;
+                setTextIfExists('lambda', d.lambda);
+                setTextIfExists('mu', d.mu);
+                setTextIfExists('c', d.c);
+                setTextIfExists('rho', d.rho);
 
                 // Interpretación de ρ
                 const statusEl = document.getElementById('cola-status');
@@ -224,9 +229,11 @@
                     clase = 'alert-danger';
                 }
 
-                statusEl.textContent = mensaje;
-                statusEl.classList.remove('d-none', 'alert-warning', 'alert-success', 'alert-info', 'alert-danger');
-                statusEl.classList.add(clase);
+                if (statusEl) {
+                    statusEl.textContent = mensaje;
+                    statusEl.classList.remove('d-none', 'alert-warning', 'alert-success', 'alert-info', 'alert-danger');
+                    statusEl.classList.add(clase);
+                }
 
             })
             .catch(err => console.error('Fetch error:', err));
@@ -239,18 +246,18 @@
             const bienvenida = document.getElementById("bienvenida");
 
             // Consultar el estado de sesión desde la API
-            fetch("/sistema/public/api/estado-sesion")
+            fetch("/sistema_Pollos/public/api/estado-sesion")
                 .then(res => res.json())
                 .then(data => {
                     if (!data.logeado) {
-                        bienvenida.innerText = "No hay usuario logueado";
+                        if (bienvenida) bienvenida.innerText = "No hay usuario logueado";
                         return;
                     }
 
                     const correo = data.correo;
 
                     // Ya que tienes el correo, pedir los datos del usuario
-                    return fetch("/sistema/public/api/obtener-usuario", {
+                    return fetch("/sistema_Pollos/public/api/obtener-usuario", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ correo })
@@ -265,9 +272,9 @@
 
                     if (data.success) {
                         const u = data.usuario;
-                        bienvenida.innerText = `Bienvenido, ${u.nombre} ${u.apellido}`;
+                        if (bienvenida) bienvenida.innerText = `Bienvenido, ${u.nombre} ${u.apellido}`;
                     } else {
-                        bienvenida.innerText = "Error: " + data.message;
+                        if (bienvenida) bienvenida.innerText = "Error: " + data.message;
                     }
                     // Aquí cargas lo que necesites
                     loadSalesChart();
@@ -276,7 +283,7 @@
                     loadSalesTable();
                 })
                 .catch(err => {
-                    bienvenida.innerText = "Error al conectar con el servidor.";
+                    if (bienvenida) bienvenida.innerText = "Error al conectar con el servidor.";
                     console.error(err);
                 });
         });
@@ -284,7 +291,7 @@
 
 
         function loadSalesChart() {
-            fetch("/sistema/public/api/ventas-ultimos-7-dias")
+            fetch("/sistema_Pollos/public/api/ventas-ultimos-7-dias")
                 .then(res => {
                     if (!res.ok) {
                         throw new Error(`HTTP error! status: ${res.status}`);
@@ -299,7 +306,10 @@
 
                     const datos = data.datos.reverse(); // Revertir solo una vez
 
-                    const ctx = document.getElementById('graficoVentas').getContext('2d');
+                    const graficoVentas = document.getElementById('graficoVentas');
+                    if (!graficoVentas) return;
+
+                    const ctx = graficoVentas.getContext('2d');
                     new Chart(ctx, {
                         type: "bar",
                         data: {
@@ -348,7 +358,7 @@
 
 
         function loadMonthlySalesChart() {
-            fetch("/sistema/public/api/ventas-ultimos-6-meses")
+            fetch("/sistema_Pollos/public/api/ventas-ultimos-6-meses")
                 .then(res => {
                     if (!res.ok) {
                         throw new Error(`HTTP error! status: ${res.status}`);
@@ -363,7 +373,10 @@
 
                     const datos = data.datos.reverse(); // Revertir solo una vez
 
-                    const ctx = document.getElementById('graficoVentasMes').getContext('2d');
+                    const graficoVentasMes = document.getElementById('graficoVentasMes');
+                    if (!graficoVentasMes) return;
+
+                    const ctx = graficoVentasMes.getContext('2d');
                     new Chart(ctx, {
                         type: "line",
                         data: {
@@ -415,10 +428,12 @@
         }
 
         function loadDeliveryTable() {
-            fetch("/sistema/public/api/repartidores-recientes")
+            fetch("/sistema_Pollos/public/api/repartidores-recientes")
                 .then(res => res.json())
                 .then(data => {
                     const tableBody = document.getElementById('tablaRepartidores');
+                    if (!tableBody) return;
+
                     if (data.success && data.repartidores.length > 0) {
                         tableBody.innerHTML = data.repartidores.map(r => `
               <tr>
@@ -441,7 +456,8 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    document.getElementById('tablaRepartidores').innerHTML = `
+                    const tableBody = document.getElementById('tablaRepartidores');
+                    if (tableBody) tableBody.innerHTML = `
             <tr>
               <td colspan="5" class="text-center text-danger py-4">
                 Error al cargar los datos
@@ -454,10 +470,12 @@
 
 
         function loadSalesTable() {
-            fetch("/sistema/public/api/ventas-recientes")
+            fetch("/sistema_Pollos/public/api/ventas-recientes")
                 .then(res => res.json())
                 .then(data => {
                     const tableBody = document.getElementById('tablaVentas');
+                    if (!tableBody) return;
+
                     if (data.success && data.ventas.length > 0) {
                         tableBody.innerHTML = data.ventas.map(v => `
               <tr>
@@ -485,7 +503,8 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    document.getElementById('tablaVentas').innerHTML = `
+                    const tableBody = document.getElementById('tablaVentas');
+                    if (tableBody) tableBody.innerHTML = `
             <tr>
               <td colspan="6" class="text-center text-danger py-4">
                 Error al cargar los datos

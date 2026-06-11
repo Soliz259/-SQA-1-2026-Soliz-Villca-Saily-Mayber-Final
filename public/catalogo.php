@@ -32,11 +32,39 @@
 
     <!-- JS para el catálogo -->
     <script>
+        const getPublicUrl = (path) => new URL(`/sistema_Pollos/public/${path}`, window.location.origin);
+
+        async function fetchJson(path, options = {}) {
+            const response = await fetch(getPublicUrl(path), options);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status} al cargar ${path}`);
+            }
+
+            return response.json();
+        }
+
+        function getProductImageUrl(url) {
+            const fallback = getPublicUrl("assets/img/logo-pollo.png").href;
+            const imageUrl = (url || "").trim();
+
+            if (!imageUrl || imageUrl.includes("fbcdn.net") || imageUrl.includes("fna.fbcdn.net")) {
+                return fallback;
+            }
+
+            if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://") || imageUrl.startsWith("/")) {
+                return imageUrl;
+            }
+
+            return getPublicUrl(imageUrl).href;
+        }
+
         // Mostrar productos con animaciones desde el nuevo controlador
-        fetch("/sistema/public/api/productos")
-            .then(res => res.json())
+        fetchJson("api/productos")
             .then(data => {
                 const contenedor = document.getElementById("productos");
+                if (!contenedor) return;
+
                 contenedor.innerHTML = ""; // Limpia antes de insertar nuevos productos
 
                 if (!data.success || !data.productos || data.productos.length === 0) {
@@ -46,9 +74,10 @@
 
                 data.productos.forEach((p, index) => {
                     const card = document.createElement("div");
+                    const imagenUrl = getProductImageUrl(p.imagenUrl);
                     card.className = "producto";
                     card.innerHTML = `
-        <img src="${p.imagenUrl || 'https://i.gifer.com/VAyR.gif'}" alt="${p.nombre}">
+        <img src="${imagenUrl}" alt="${p.nombre}" onerror="this.onerror=null;this.src='/sistema_Pollos/public/assets/img/logo-pollo.png'">
         <div class="producto-content">
           <h3>${p.nombre}</h3>
           <p>${p.descripcionProducto}</p>
@@ -68,13 +97,13 @@
             })
             .catch(error => {
                 console.error("Error al cargar productos:", error);
-                document.getElementById("productos").innerHTML = "<p>Error al cargar productos.</p>";
+                const contenedor = document.getElementById("productos");
+                if (contenedor) contenedor.innerHTML = "<p>Error al cargar productos.</p>";
             });
 
 
         function agregarAlCarrito(idProducto) {
-            fetch("estadoSesion.php")
-                .then(res => res.json())
+            fetchJson("estadoSesion.php")
                 .then(session => {
                     if (!session.logeado) {
                         // Mostrar mensaje elegante de alerta de login
@@ -105,7 +134,7 @@
                     }
 
                     // Usuario logueado, hacer la petición para agregar al carrito
-                    fetch("api/agregar-producto-carrito", {
+                    fetchJson("api/agregar-producto-carrito", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json"
@@ -116,11 +145,7 @@
                                 cantidad: 1
                             })
                         })
-                        .then(async res => {
-                            const text = await res.text();
-                            try {
-                                const data = JSON.parse(text);
-
+                        .then(data => {
                                 if (data.success) {
                                     // Mostrar mensaje de éxito elegante
                                     const exito = document.createElement("div");
@@ -158,10 +183,6 @@
                                 } else {
                                     alert(data.mensaje || "No se pudo agregar al carrito.");
                                 }
-                            } catch (e) {
-                                console.error("Error al parsear respuesta:", e);
-                                console.log("Respuesta cruda:", text);
-                            }
                         });
                 })
                 .catch(err => {

@@ -64,7 +64,7 @@
       location.href = "../../logout.php";
     }
 
-    fetch("/sistema/public/estadoSesion.php")
+    fetch("/sistema_Pollos/public/estadoSesion.php")
       .then((res) => res.json())
       .then((data) => {
         if (!data.logeado) {
@@ -76,7 +76,7 @@
       })
       .catch(() => {
         alert("Error al verificar sesión.");
-        location.href = "/sistema/public/login.php"; // ruta absoluta también aquí
+        location.href = "/sistema_Pollos/public/login.php"; // ruta absoluta también aquí
       });
 
     // Mapa
@@ -91,7 +91,7 @@
 
 
 
-    fetch("/sistema/public/api/datos-cliente", {
+    fetch("/sistema_Pollos/public/api/datos-cliente", {
       method: "POST",
     })
       .then((res) => res.json())
@@ -171,7 +171,7 @@
         return;
       }
 
-      fetch("/sistema/public/api/registrar-direccion", {
+      fetch("/sistema_Pollos/public/api/registrar-direccion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos),

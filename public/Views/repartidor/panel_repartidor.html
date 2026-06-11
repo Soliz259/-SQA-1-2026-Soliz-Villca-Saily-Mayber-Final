@@ -86,7 +86,7 @@
     // Función para cerrar sesión
     function cerrarSesion() {
       localStorage.removeItem("correoLogeado");
-      location.href = "/sistema/public/logout.php";
+      location.href = "/sistema_Pollos/public/logout.php";
     }
 
     let pedidosMostrados = new Set();
@@ -94,7 +94,7 @@
     document.addEventListener("DOMContentLoaded", function () {
       const nombreRepartidor = document.getElementById("nombreRepartidor");
 
-      fetch("/sistema/public/api/estado-sesion")
+      fetch("/sistema_Pollos/public/api/estado-sesion")
         .then(res => {
           if (!res.ok) throw new Error("Error en la respuesta del servidor");
           return res.json();
@@ -102,11 +102,11 @@
         .then(data => {
           if (!data?.logeado || !data.correo) {
             alert("No hay sesión activa.");
-            location.href = "login.html";
+            location.href = "/sistema_Pollos/public/login.php";
             return;
           }
 
-          return fetch("/sistema/public/api/repartidores/obtener-por-correo", {
+          return fetch("/sistema_Pollos/public/api/repartidores/obtener-por-correo", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ correo: data.correo })
@@ -119,33 +119,35 @@
         })
         .then(data => {
           if (!data?.success) {
-            nombreRepartidor.textContent = "No se pudo cargar el usuario";
+            if (nombreRepartidor) nombreRepartidor.textContent = "No se pudo cargar el usuario";
             return;
           }
 
           const userData = Array.isArray(data.data) ? data.data[0] : data.data;
           if (!userData) {
-            nombreRepartidor.textContent = "Usuario no encontrado";
+            if (nombreRepartidor) nombreRepartidor.textContent = "Usuario no encontrado";
             return;
           }
 
-          nombreRepartidor.textContent = `${userData.nombre} ${userData.apellido}`;
+          if (nombreRepartidor) nombreRepartidor.textContent = `${userData.nombre} ${userData.apellido}`;
           cargarPedidosAsignados(userData.idUsuario);
         })
         .catch(err => {
           console.error("Error en autenticación:", err);
-          nombreRepartidor.textContent = "Error al cargar nombre";
+          if (nombreRepartidor) nombreRepartidor.textContent = "Error al cargar nombre";
         });
     });
 
     function cargarPedidosAsignados(idUsuario) {
-      fetch(`/sistema/public/api/repartidores/pedidos?idUsuario=${idUsuario}`)
+      fetch(`/sistema_Pollos/public/api/repartidores/pedidos?idUsuario=${idUsuario}`)
         .then(res => {
           if (!res.ok) throw new Error("Error al obtener pedidos");
           return res.json();
         })
         .then(data => {
           const tabla = document.getElementById("tablaPedidos");
+          if (!tabla) return;
+
           tabla.innerHTML = "";
 
           if (data?.success && Array.isArray(data.data) && data.data.length > 0) {
@@ -182,7 +184,8 @@
         })
         .catch(err => {
           console.error("Error cargando pedidos:", err);
-          document.getElementById("tablaPedidos").innerHTML = `
+          const tabla = document.getElementById("tablaPedidos");
+          if (tabla) tabla.innerHTML = `
             <tr>
               <td colspan="5" class="empty-state">
                 <div><i class="fas fa-exclamation-triangle"></i> Error al cargar pedidos</div>
@@ -226,7 +229,7 @@
         return;
       }
 
-      fetch("/sistema/public/api/repartidores/pedido-entregado", {
+      fetch("/sistema_Pollos/public/api/repartidores/pedido-entregado", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idAsignacion })

@@ -9,7 +9,7 @@ class SesionController {
             echo json_encode([
                 'logeado' => true,
                 'correo' => $_SESSION['correo'],
-                'rol' => $_SESSION['rol'],
+                'rol' => $_SESSION['rol'] ?? null,
             ]);
         } else {
             echo json_encode(['logeado' => false]);
